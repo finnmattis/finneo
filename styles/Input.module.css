@@ -1,0 +1,70 @@
+.text-box {
+    position: relative;
+    font-size: 14px;
+    border-top: 20px solid transparent;
+    margin-bottom: 12px;
+    display: inline-block;
+    --field-padding: 12px;
+}
+
+.text-box input {
+    border: none;
+    appearance: none;
+    background: #f2f2f2;
+    padding: var(--field-padding);
+    border-radius: 3px;
+    width: 250px;
+    outline: none;
+    font-size: 14px;
+}
+
+.text-box .placeholder {
+    position: absolute;
+    left: var(--field-padding);
+    width: calc(100% - (var(--field-padding) * 2));
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    top: 22px;
+    line-height: 100%;
+    transform: translateY(-50%);
+    color: #aaa;
+    cursor: text;
+    transition:
+        top 0.3s ease,
+        color 0.3s ease,
+        font-size 0.3s ease;
+}
+
+.text-box input:not(:placeholder-shown)+.placeholder,
+.text-box input:focus+.placeholder {
+    top: -10px;
+    font-size: 10px;
+    color: #a64bf4;
+}
+
+.text-box input {
+    background: none;
+    border: 2px solid #ddd;
+    transition: border-color 0.3s ease;
+}
+
+.text-box input+.placeholder {
+    left: 8px;
+    padding: 0 5px;
+}
+
+.text-box input:not(:placeholder-shown),
+.text-box input:focus {
+    border-color: #a64bf4;
+    transition-delay: 0.1s
+}
+
+.text-box input:not(:placeholder-shown)+.placeholder,
+.text-box input:focus+.placeholder {
+    top: 0;
+    font-size: 10px;
+    color: #a64bf4;
+    background: #fff;
+    width: auto
+}

@@ -1,8 +1,13 @@
 import Image from "next/image"
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
+import { toast } from "react-hot-toast"
+import { UserContext } from "../lib/context"
+import { auth } from "../lib/firebase"
 import styles from "../styles/Header.module.css"
 
+
 function Menu(props) {
+    const { user, username } = useContext(UserContext)
     const menu_ref = useRef()
     const active = props.show ? "active" : ""
     const { onClickOutside, profile_ref } = props
@@ -23,12 +28,18 @@ function Menu(props) {
         }
     }, [onClickOutside])
 
+    const logout = () => {
+        auth.signOut().then(() => {
+            toast.success("Signed out!")
+        })
+    }
+
     return (
         <div
             ref={menu_ref}
             className={`${styles.menu} ${active ? styles.active : ""}`}
         >
-            <h3>User</h3>
+            <h3>{username || "Guest"}</h3>
             <ul>
                 <li>
                     <div className={styles.wrapper}>
@@ -40,7 +51,7 @@ function Menu(props) {
                     </div>
                     <p>Settings</p>
                 </li>
-                <li>
+                <li onClick={logout}>
                     <div className={styles.wrapper}>
                         <Image
                             src="/logout.png"
@@ -56,6 +67,7 @@ function Menu(props) {
 }
 
 export default function Header() {
+    const { profilePicture } = useContext(UserContext)
     const profile_ref = useRef()
     const [menuShown, setMenuShown] = useState(false)
 
@@ -66,7 +78,7 @@ export default function Header() {
                 onClick={() => setMenuShown(!menuShown)}
                 ref={profile_ref}
             >
-                <Image src="/user.png" width="100%" height="100%"></Image>
+                <Image src={profilePicture || "/user.png"} width="100%" height="100%"></Image>
             </div>
             <Menu
                 show={menuShown}
