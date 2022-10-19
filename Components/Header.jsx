@@ -1,9 +1,11 @@
 import Image from "next/image"
+import Link from 'next/link'
 import { useContext, useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { UserContext } from "../lib/context"
 import { auth } from "../lib/firebase"
 import styles from "../styles/Header.module.css"
+
 
 
 function Menu(props) {
@@ -73,6 +75,12 @@ export default function Header() {
 
     return (
         <header className={styles.root}>
+            <Link href="/">
+                <div className={styles.logo}>
+                    <Image src={"/logo.png"} width="100%" height="100%"></Image>
+                </div>
+            </Link>
+
             <div
                 className={styles.profile}
                 onClick={() => setMenuShown(!menuShown)}
