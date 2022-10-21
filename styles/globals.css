@@ -9,3 +9,11 @@ body {
   margin: 0;
   font-family: Poppins-Regular, sans-serif;
 }
+
+:root {
+  --header: rgb(25, 25, 30);
+  --bg: rgb(30, 30, 40);
+  --primary: rgb(40, 40, 60);
+  --text-color: rgb(140, 140, 160);
+  --accent: rgb(50, 90, 240);
+}

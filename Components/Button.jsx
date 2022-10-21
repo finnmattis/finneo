@@ -1,18 +1,8 @@
 import styles from "../styles/Button.module.css"
 
-export default function Button(props) {
+export default function Button({ name, func }) {
     return (
-        <div className={styles["button-container"]}>
-            <div className={styles["wrap-button-container"]}>
-                <button
-                    className={styles.button}
-                    onClick={props.func}
-                    disabled={props.disabled}
-                >
-                    {props.name}
-                </button>
-                <div className={styles["button-bg"]}></div>
-            </div>
-        </div>
+        <button onClick={func} className={styles.button}><p className={styles["button-text"]}>{name}</p></button>
+
     )
 }

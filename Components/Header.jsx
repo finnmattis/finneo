@@ -1,12 +1,10 @@
 import Image from "next/image"
-import Link from 'next/link'
+import Link from "next/link"
 import { useContext, useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { UserContext } from "../lib/context"
 import { auth } from "../lib/firebase"
 import styles from "../styles/Header.module.css"
-
-
 
 function Menu(props) {
     const { user, username } = useContext(UserContext)
@@ -33,6 +31,7 @@ function Menu(props) {
     const logout = () => {
         auth.signOut().then(() => {
             toast.success("Signed out!")
+            onClickOutside()
         })
     }
 
@@ -42,28 +41,47 @@ function Menu(props) {
             className={`${styles.menu} ${active ? styles.active : ""}`}
         >
             <h3>{username || "Guest"}</h3>
-            <ul>
-                <li>
-                    <div className={styles.wrapper}>
-                        <Image
-                            src="/settings.png"
-                            width="100%"
-                            height="100%"
-                        ></Image>
-                    </div>
-                    <p>Settings</p>
-                </li>
-                <li onClick={logout}>
-                    <div className={styles.wrapper}>
-                        <Image
-                            src="/logout.png"
-                            width="100%"
-                            height="100%"
-                        ></Image>
-                    </div>
-                    <p>Logout</p>
-                </li>
-            </ul>
+            {username ? (
+                <ul>
+                    <Link href="/upload">
+                        <li onClick={onClickOutside}>
+                            <div className={styles.wrapper}>
+                                <Image
+                                    src="/upload.png"
+                                    width="100%"
+                                    height="100%"
+                                ></Image>
+                            </div>
+                            <p>Upload</p>
+                        </li>
+                    </Link>
+                    <li onClick={logout}>
+                        <div className={styles.wrapper}>
+                            <Image
+                                src="/logout.png"
+                                width="100%"
+                                height="100%"
+                            ></Image>
+                        </div>
+                        <p>Logout</p>
+                    </li>
+                </ul>
+            ) : (
+                <ul>
+                    <Link href="/enter">
+                        <li onClick={onClickOutside}>
+                            <div className={styles.wrapper}>
+                                <Image
+                                    src="/settings.png"
+                                    width="100%"
+                                    height="100%"
+                                ></Image>
+                            </div>
+                            <p>Login</p>
+                        </li>
+                    </Link>
+                </ul>
+            )}
         </div>
     )
 }
@@ -86,7 +104,11 @@ export default function Header() {
                 onClick={() => setMenuShown(!menuShown)}
                 ref={profile_ref}
             >
-                <Image src={profilePicture || "/user.png"} width="100%" height="100%"></Image>
+                <Image
+                    src={profilePicture || "/user.png"}
+                    width="100%"
+                    height="100%"
+                ></Image>
             </div>
             <Menu
                 show={menuShown}

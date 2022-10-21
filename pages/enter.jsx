@@ -4,6 +4,7 @@ import { useCallback, useContext, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import Button from "../Components/Button"
 import Input from "../Components/Input"
+import UploadFile from "../Components/UploadFile"
 import { UserContext } from "../lib/context"
 import { auth, firestore, googleAuthProvider, storage } from "../lib/firebase"
 import styles from "../styles/Enter.module.css"
@@ -39,7 +40,7 @@ function ChoosePicture() {
         const file = Array.from(profilePic)[0];
         const extension = file.type.split('/')[1];
 
-        const ref = storage.ref(`uploads/${auth.currentUser.uid}/${Date.now()}.${extension}`);
+        const ref = storage.ref(`profiles/${auth.currentUser.uid}.${extension}`);
         const task = ref.put(file);
 
         // Get downloadURL AFTER task resolves (Note: this is not a native Promise)
@@ -57,17 +58,8 @@ function ChoosePicture() {
     return (
         <>
             <span className={styles.title}>Choose Picture</span>
-            <div className={styles["upload-container"]}>
-                <label htmlFor="file-upload" className={styles.upload}>Choose File</label>
-            </div>
-            <input
-                id="file-upload"
-                className={styles.hidden}
-                type="file"
-                accept="image/png, image/jpeg"
-                onChange={(e) => { setProfilePic(e.target.files) }}
-            />
-            <span>Preview:</span>
+            <UploadFile name="Profile Picture" func={(e) => { setProfilePic(e.target.files) }} />
+            <span className={styles.preview}>Preview:</span>
             <div className={styles["profile-preview"]}>
                 <Image src={viewPic || "/user.png"} width="200px" height="200px"></Image>
             </div>
@@ -103,7 +95,6 @@ function ChooseUsername() {
                 toast.success("Success!")
             })
             .catch((error) => {
-                console.log(error)
                 toast.error("Failed to set username")
             })
     }
@@ -117,7 +108,6 @@ function ChooseUsername() {
             if (username.length >= 3) {
                 const ref = firestore.doc(`usernames/${username}`)
                 const { exists } = await ref.get()
-                console.log("Firestore read executed!")
                 setIsValid(!exists)
                 setLoading(false)
             }
@@ -166,7 +156,6 @@ function GoogleAuth() {
         auth.signInWithPopup(provider)
             .catch((error) => {
                 const errorCode = error.code
-                console.log(errorCode)
                 if (
                     errorCode === "auth/popup-closed-by-user" ||
                     errorCode === "auth/cancelled-popup-request"
@@ -206,7 +195,6 @@ function SignUp(props) {
 
     const signUp = async (e) => {
         e.preventDefault()
-        console.log({ email: email, password: password })
 
         auth.createUserWithEmailAndPassword(email, password)
             .then(() => { toast.success("Signed up!") })
@@ -259,7 +247,6 @@ function SignIn(props) {
             })
             .catch((error) => {
                 const errorCode = error.code
-                console.log(errorCode)
                 if (errorCode === "auth/invalid-email") {
                     toast.error("Invalid Email")
                 } else if (errorCode === "auth/wrong-password") {
@@ -269,24 +256,6 @@ function SignIn(props) {
                 } else {
                     toast.error("Failed to sign in")
                 }
-            })
-    }
-
-    const signInGoogle = () => {
-        const provider = googleAuthProvider
-        auth.signInWithPopup(provider)
-            .catch((error) => {
-                const errorCode = error.code
-                console.log(errorCode)
-                if (
-                    errorCode === "auth/popup-closed-by-user" ||
-                    errorCode === "auth/cancelled-popup-request"
-                ) {
-                    toast.error("Popup Closed")
-                }
-            })
-            .then(() => {
-                toast.success("Signed in!")
             })
     }
 
@@ -311,6 +280,14 @@ function SignIn(props) {
             </span>
             <GoogleAuth />
         </>
+    )
+}
+
+function SignedIn() {
+    return (
+        <div>
+            <p>Already Signed In</p>
+        </div>
     )
 }
 

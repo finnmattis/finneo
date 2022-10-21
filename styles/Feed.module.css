@@ -1,0 +1,73 @@
+.root {
+    min-height: 90vh;
+}
+
+.section {
+    display: flex;
+}
+
+.container {
+    position: relative;
+    width: 20vw;
+    height: 12vw;
+    margin: 2.5vw;
+    border-radius: 25px;
+    background-color: #4c4c51;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    position: absolute;
+    bottom: 5px;
+    left: 16px;
+    margin-left: 10px;
+    font-size: 30px;
+    color: white;
+    transition: 0.5s;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.description {
+    position: absolute;
+    bottom: 0px;
+    left: 16px;
+    margin-left: 10px;
+    font-size: 20px;
+    color: white;
+    cursor: default;
+    transition: 0.5s;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.appear {
+    visibility: visible;
+    opacity: 1;
+}
+
+.video {
+    position: relative;
+    width: 20vw;
+    height: 12vw;
+    border-radius: 25px;
+    display: inline;
+    overflow: hidden;
+    transition: filter 0.5s ease;
+}
+
+.hover {
+    filter: blur(4px);
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+}
+
+.end-text {
+    color: white;
+    font-size: 30px;
+}

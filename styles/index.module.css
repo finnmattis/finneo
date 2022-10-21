@@ -1,0 +1,12 @@
+.root {
+    background-color: #282b30;
+}
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    height: 10vh;
+    width: 100%;
+    background-color: var(--header);
+}

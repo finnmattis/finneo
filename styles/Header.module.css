@@ -4,7 +4,7 @@
     z-index: 999;
     height: 10vh;
     width: 100%;
-    background-color: #1e2124;
+    background-color: var(--header);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -37,7 +37,7 @@
     width: 180px;
     box-sizing: 0 5px 25px rgba(0, 0, 0, 0.1);
     border-radius: 15px;
-    background-color: white;
+    background-color: var(--primary);
     transition: 0.5s;
     visibility: hidden;
     opacity: 0;
@@ -56,7 +56,7 @@
     width: 20px;
     height: 20px;
     content: "";
-    background-color: white;
+    background-color: var(--primary);
     transform: rotate(45deg);
 }
 
@@ -66,7 +66,7 @@
     font-size: 18px;
     line-height: 1.5rem;
     font-weight: 500;
-    color: #555;
+    color: var(--text-color);
 }
 
 .root .menu ul {
@@ -75,7 +75,7 @@
 
 .root .menu ul li {
     list-style: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid var(--text-color);
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -94,11 +94,11 @@
 }
 
 .root .menu ul li p {
-    color: #555;
+    color: var(--text-color);
     font-weight: 500;
     transition: 0.5s;
 }
 
 .root .menu ul li:hover p {
-    color: #6649b8;
+    color: var(--accent);
 }
