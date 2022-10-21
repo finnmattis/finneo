@@ -1,5 +1,12 @@
 .root {
     background-color: #282b30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.filler {
+    height: 5vh
 }
 
 .footer {

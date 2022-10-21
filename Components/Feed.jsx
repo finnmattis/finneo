@@ -32,23 +32,34 @@ function Video({ id, title, thumbnailURL, description }) {
     )
 }
 
-export default function Feed({ uploads, load_func, end }) {
+export default function Feed({ uploads, load_func, end, width }) {
     if (uploads.length == 0) {
         return <p>:(</p>
     }
 
     let sections = []
+    let section_ammount = Math.floor(width / 25)
     let i = 0
     while (uploads.length > i) {
-        sections.push(uploads.slice(i, i + 4))
-        i += 4
+        sections.push(uploads.slice(i, i + section_ammount))
+        i += section_ammount
     }
 
     return (
-        <div className={styles.root}>
+        <div
+            className={styles.root}
+            style={{ minHeight: "90vh", width: `${width}%` }}
+        >
             {sections.map((section, index) => {
                 return (
-                    <div className={styles.section} key={index}>
+                    <div
+                        style={{
+                            justifyContent:
+                                width < 50 ? "center" : "space-between",
+                        }}
+                        className={styles.section}
+                        key={index}
+                    >
                         {section.map((upload) => {
                             return (
                                 <Video

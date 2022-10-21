@@ -1,17 +1,20 @@
 .root {
-    min-height: 90vh;
+    background-color: var(--primary);
+    border-radius: 15px;
 }
+
 
 .section {
     display: flex;
+    justify-content: space-between;
 }
 
 .container {
     position: relative;
     width: 20vw;
     height: 12vw;
-    margin: 2.5vw;
     border-radius: 25px;
+    margin: 20px;
     background-color: #4c4c51;
     cursor: pointer;
     display: flex;
