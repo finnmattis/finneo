@@ -1,11 +1,24 @@
 .root {
-    height: 90vh;
+    min-height: 90vh;
     background-color: var(--bg);
+}
+
+.watch-container {
+    display: flex;
+}
+
+.vid-container {
+    width: 70vw;
+}
+
+.feed-container {
+    margin: 20px 0 20px 0;
+    display: flex;
 }
 
 .video {
     aspect-ratio: 16/9;
-    width: 70%;
+    width: 65vw;
     height: 60vh;
     margin-left: 20px;
     border-radius: 15px;
@@ -56,7 +69,6 @@
 .nothing-container {
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 .nothing-text {

@@ -24,6 +24,6 @@
 }
 
 .text-box input:focus {
-    border: 1px solid rgb(55, 90, 200);
-    outline: 2px solid rgba(55, 90, 200, 0.5);
+    border: 1px solid var(--accent);
+    outline: 2px solid rgba(var(--accent), 0.5);
 }

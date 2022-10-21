@@ -9,20 +9,18 @@ import { UserContext } from "../lib/context"
 import { auth, firestore, googleAuthProvider, storage } from "../lib/firebase"
 import styles from "../styles/Enter.module.css"
 
-
 function ChoosePicture() {
     const { user } = useContext(UserContext)
     //Need to set this after username because update needs document to exist
     if (user.photoURL) {
         firestore
-            .collection('users')
+            .collection("users")
             .doc(auth.currentUser.uid)
-            .update({ photoURL: user.photoURL });
+            .update({ photoURL: user.photoURL })
     }
 
     const [profilePic, setProfilePic] = useState(null)
     const [viewPic, setViewPic] = useState(null)
-
 
     useEffect(() => {
         if (profilePic) {
@@ -37,37 +35,40 @@ function ChoosePicture() {
     }, [profilePic])
 
     const uploadFile = async () => {
-        const file = Array.from(profilePic)[0];
-        const extension = file.type.split('/')[1];
+        const file = Array.from(profilePic)[0]
+        const extension = file.type.split("/")[1]
 
-        const ref = storage.ref(`profiles/${auth.currentUser.uid}.${extension}`);
-        const task = ref.put(file);
+        const ref = storage.ref(`profiles/${auth.currentUser.uid}.${extension}`)
+        const task = ref.put(file)
 
         // Get downloadURL AFTER task resolves (Note: this is not a native Promise)
-        task
-            .then((d) => ref.getDownloadURL())
-            .then((url) => {
-                firestore
-                    .collection('users')
-                    .doc(auth.currentUser.uid)
-                    .update({ photoURL: url });
-                toast.success("Success!")
-            });
-    };
+        task.then((d) => ref.getDownloadURL()).then((url) => {
+            firestore
+                .collection("users")
+                .doc(auth.currentUser.uid)
+                .update({ photoURL: url })
+            toast.success("Success!")
+        })
+    }
 
     return (
         <>
             <span className={styles.title}>Choose Picture</span>
-            <UploadFile name="Profile Picture" func={(e) => { setProfilePic(e.target.files) }} />
+            <UploadFile
+                name="Profile Picture"
+                func={(e) => {
+                    setProfilePic(e.target.files)
+                }}
+            />
             <span className={styles.preview}>Preview:</span>
             <div className={styles["profile-preview"]}>
-                <Image src={viewPic || "/user.png"} width="200px" height="200px"></Image>
+                <Image
+                    src={viewPic || "/user.png"}
+                    width="200px"
+                    height="200px"
+                ></Image>
             </div>
-            <Button
-                name="Submit"
-                func={uploadFile}
-                disabled={!profilePic}
-            />
+            <Button name="Submit" func={uploadFile} disabled={!profilePic} />
         </>
     )
 }
@@ -189,7 +190,7 @@ function GoogleAuth() {
     )
 }
 
-function SignUp(props) {
+function SignUp({ func }) {
     const [email, setEmail] = useState("")
     const [password, SetPassword] = useState("")
 
@@ -197,7 +198,9 @@ function SignUp(props) {
         e.preventDefault()
 
         auth.createUserWithEmailAndPassword(email, password)
-            .then(() => { toast.success("Signed up!") })
+            .then(() => {
+                toast.success("Signed up!")
+            })
             .catch((error) => {
                 const errorCode = error.code
                 if (errorCode === "auth/invalid-email") {
@@ -228,7 +231,7 @@ function SignUp(props) {
                 }}
             />
             <Button name="Sign Up" func={signUp} />
-            <span className={styles.signup} onClick={props.func}>
+            <span className={styles.signup} onClick={func}>
                 Already have an account? Sign in
             </span>
             <GoogleAuth />
@@ -236,7 +239,7 @@ function SignUp(props) {
     )
 }
 
-function SignIn(props) {
+function SignIn({ func }) {
     const [email, setEmail] = useState("")
     const [password, SetPassword] = useState("")
 
@@ -275,7 +278,7 @@ function SignIn(props) {
                 }}
             />
             <Button name="Sign In" func={signInEmail} />
-            <span className={styles.signup} onClick={props.func}>
+            <span className={styles.signup} onClick={func}>
                 Don't have an accout? Sign Up!
             </span>
             <GoogleAuth />
@@ -298,7 +301,19 @@ export default function enter() {
     return (
         <main className={styles.root}>
             <div className={styles.container}>
-                {user ? !username ? <ChooseUsername /> : profilePicture ? <p>Already Signed In!</p> : <ChoosePicture /> : signUp ? <SignUp func={() => setSignUp(false)} /> : <SignIn func={() => setSignUp(true)} />}
+                {user ? (
+                    !username ? (
+                        <ChooseUsername />
+                    ) : profilePicture ? (
+                        <p>Already Signed In!</p>
+                    ) : (
+                        <ChoosePicture />
+                    )
+                ) : signUp ? (
+                    <SignUp func={() => setSignUp(false)} />
+                ) : (
+                    <SignIn func={() => setSignUp(true)} />
+                )}
             </div>
         </main>
     )

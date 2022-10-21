@@ -1,63 +1,84 @@
 import Image from "next/image"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
-import { firestore } from "../../lib/firebase"
+import Feed from "../../Components/Feed"
+import { firestore, toJSON } from "../../lib/firebase"
 import styles from "../../styles/WatchPage.module.css"
 
-export default function WatchPage() {
-    const router = useRouter()
-    const { id } = router.query
-    const [exists, setExists] = useState(true)
-    const [url, setUrl] = useState(null)
-    const [title, setTitle] = useState(null)
-    const [desc, setDesc] = useState(null)
-    const [username, setUsername] = useState(null)
-    const [photoURL, setPhotoURL] = useState(null)
+const LIMIT = 3
 
-    const fetchData = async () => {
-        if (id) {
-            const videoQuerry = firestore
-                .collectionGroup("uploads")
-                .where("id", "==", id)
-            let vidSnapshot = await videoQuerry.get()
-            if (vidSnapshot.docs.length > 0) {
-                let data = vidSnapshot.docs[0].data()
-                setUrl(data.videoURL)
-                setTitle(data.title)
-                setDesc(data.description)
-                const authorQuerry = firestore
-                    .collection("users")
-                    .doc(data.author)
-                let authorSnapshot = await authorQuerry.get()
-                setUsername(authorSnapshot.data().username)
-                setPhotoURL(authorSnapshot.data().photoURL)
-            } else {
-                setExists(false)
-            }
+export async function getServerSideProps(context) {
+    const { id } = context.params
+
+    const videoQuerry = firestore
+        .collectionGroup("uploads")
+        .where("id", "==", id)
+    let vidSnapshot = await videoQuerry.get()
+    if (vidSnapshot.empty) {
+        return {
+            props: {
+                empty: true,
+            },
         }
     }
+    let vid = vidSnapshot.docs[0].data()
+    const authorQuerry = firestore.collection("users").doc(vid.author)
+    let authorSnapshot = await authorQuerry.get()
 
-    useEffect(() => {
-        fetchData()
-    }, [id])
+    const uploadsQuerry = firestore
+        .collectionGroup("uploads")
+        .orderBy("createdAt", "desc")
+        .limit(LIMIT)
+    const uploads = (await uploadsQuerry.get()).docs.map(toJSON)
 
+    return {
+        props: {
+            uploads,
+            url: vid.videoURL,
+            title: vid.title,
+            desc: vid.description,
+            username: authorSnapshot.data().username,
+            photoURL: authorSnapshot.data().photoURL,
+            exists: true,
+        },
+    }
+}
+
+export default function WatchPage({
+    uploads,
+    url,
+    title,
+    desc,
+    username,
+    photoURL,
+    exists,
+}) {
     return (
         <div className={styles.root}>
             {exists ? (
-                <div>
-                    <video className={styles.video} src={url} controls={true} />
-                    <div className={styles["info-container"]}>
-                        <div className={styles["author-container"]}>
-                            <div className={styles.profile}>
-                                <Image
-                                    src={photoURL ? photoURL : "/"}
-                                    layout="fill"
-                                />
+                <div className={styles["watch-container"]}>
+                    <div className={styles["vid-container"]}>
+                        <video
+                            className={styles.video}
+                            src={url}
+                            controls={true}
+                        />
+                        <div className={styles["info-container"]}>
+                            <div className={styles["author-container"]}>
+                                <div className={styles.profile}>
+                                    <Image
+                                        src={photoURL ? photoURL : "/"}
+                                        layout="fill"
+                                    />
+                                </div>
+                                <p className={styles.username}>{username}</p>
                             </div>
-                            <p className={styles.username}>{username}</p>
+                            <h3 className={styles.title}>{title}</h3>
+                            <p className={styles.desc}>{desc}</p>
                         </div>
-                        <h3 className={styles.title}>{title}</h3>
-                        <p className={styles.desc}>{desc}</p>
+                    </div>
+                    <div className={styles["feed-container"]}>
+                        <Feed initial_uploads={uploads} width="25" />
                     </div>
                 </div>
             ) : (

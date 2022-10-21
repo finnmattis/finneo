@@ -6,11 +6,10 @@ import { UserContext } from "../lib/context"
 import { auth } from "../lib/firebase"
 import styles from "../styles/Header.module.css"
 
-function Menu(props) {
+function Menu({ show, onClickOutside, profile_ref }) {
     const { user, username } = useContext(UserContext)
     const menu_ref = useRef()
-    const active = props.show ? "active" : ""
-    const { onClickOutside, profile_ref } = props
+    const active = show ? "active" : ""
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -72,7 +71,7 @@ function Menu(props) {
                         <li onClick={onClickOutside}>
                             <div className={styles.wrapper}>
                                 <Image
-                                    src="/settings.png"
+                                    src="/login.png"
                                     width="100%"
                                     height="100%"
                                 ></Image>
