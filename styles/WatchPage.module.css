@@ -50,19 +50,19 @@
 
 .username {
     margin-left: 20px;
-    color: white;
+    color: var(--text-color);
     font-size: 25px;
 }
 
 .title {
     margin: 0 0 0 20px;
-    color: white;
+    color: var(--text-color);
     font-size: 30px;
 }
 
 .desc {
     margin: 0 0 0 20px;
-    color: white;
+    color: var(--text-color);
     font-size: 20px;
 }
 
@@ -72,6 +72,6 @@
 }
 
 .nothing-text {
-    color: white;
+    color: var(--text-color);
     font-size: 30px;
 }

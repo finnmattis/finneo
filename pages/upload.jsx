@@ -52,13 +52,13 @@ export default function upload() {
                             .collection("uploads")
                             .doc()
                         doc.set({
-                            id: doc.id,
-                            videoURL: vidUrl,
-                            title: title,
-                            thumbnailURL: thumbUrl,
-                            description: desc,
-                            createdAt: serverTimestamp(),
                             author: user.uid,
+                            createdAt: serverTimestamp(),
+                            description: desc,
+                            id: doc.id,
+                            thumbnailURL: thumbUrl,
+                            title: title,
+                            videoURL: vidUrl,
                         })
                         toast.success("Success!")
                     })
@@ -68,33 +68,39 @@ export default function upload() {
     return (
         <div className={styles.root}>
             <div className={styles.container}>
-                <UploadFile
-                    name="Video"
-                    accept="video/*"
-                    func={(e) => {
-                        setVideo(e.target.files)
-                    }}
-                />
-                <UploadFile
-                    name="Thumbnail"
-                    accept="image/*"
-                    func={(e) => {
-                        setThumbnail(e.target.files)
-                    }}
-                />
-                <Input
-                    name="Title"
-                    func={(e) => {
-                        setTitle(e.target.value)
-                    }}
-                />
-                <Input
-                    name="Description"
-                    func={(e) => {
-                        setDesc(e.target.value)
-                    }}
-                />
-                <Button name="Submit" func={uploadFile} />
+                {user ? (
+                    <>
+                        <UploadFile
+                            name="Video"
+                            accept="video/*"
+                            func={(e) => {
+                                setVideo(e.target.files)
+                            }}
+                        />
+                        <UploadFile
+                            name="Thumbnail"
+                            accept="image/*"
+                            func={(e) => {
+                                setThumbnail(e.target.files)
+                            }}
+                        />
+                        <Input
+                            name="Title"
+                            func={(e) => {
+                                setTitle(e.target.value)
+                            }}
+                        />
+                        <Input
+                            name="Description"
+                            func={(e) => {
+                                setDesc(e.target.value)
+                            }}
+                        />
+                        <Button name="Submit" func={uploadFile} />
+                    </>
+                ) : (
+                    <p className={styles["not-login-text"]}>Not logged in!</p>
+                )}
             </div>
         </div>
     )

@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+
+      match /uploads/{uploadID}{
+        allow read;
+      }
+
+      match /users/{userID} {
+        allow read;
+        allow create: if isValidUser(userID) && hasAll(["username"])
+        allow update: if request.auth.uid == userID && onlyEditFields(["photoURL"])
+      }
+
+      match /usernames/{username} {
+        allow read;
+        allow create: if isValidUsername(username)
+      }
+
+      match /users/{userID}/uploads/{uploadID} {
+        allow read;
+        allow create: if request.auth.uid == userID && hasAll(["author", "createdAt", "description", "id", "thumbnailURL", "title", "videoURL"]);
+      }
+    }
+
+    function isValidUser(userID) {
+      let isOwner = request.auth.uid == userID;
+      let username = request.resource.data.username;
+      let createdValidUsername = existsAfter(/databases/$(database)/documents/usernames/$(username));
+
+      return isOwner && createdValidUsername;
+    }
+
+    function isValidUsername(username) {
+			let isOwner = request.auth.uid == request.resource.data.uid;
+      let isValidLength = username.size() >= 3 && username.size() <= 15;
+      let isValidUserDoc = getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.username == username;
+        
+      return isOwner && isValidLength && isValidUserDoc && hasAll(["uid"]);     
+      }
+
+    function hasAll(fields) {
+      return request.resource.data.keys().hasAll(fields) && hasOnly(fields);
+    }
+
+    function hasOnly(fields){
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function onlyEditFields(allowedFields) {
+      let editedKeys = request.resource.data.diff(resource.data).affectedKeys();
+      return editedKeys.hasOnly(allowedFields);
+    }
+  }
+}

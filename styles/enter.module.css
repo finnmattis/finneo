@@ -86,3 +86,8 @@
     border-radius: 50%;
     overflow: hidden;
 }
+
+.signed-in-text {
+    color: var(--text-color);
+    font-size: 30px;
+}

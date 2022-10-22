@@ -3,6 +3,7 @@ import Image from "next/image"
 import { useCallback, useContext, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import Button from "../Components/Button"
+import Checkmark from "../Components/Checkmark"
 import Input from "../Components/Input"
 import UploadFile from "../Components/UploadFile"
 import { UserContext } from "../lib/context"
@@ -193,6 +194,7 @@ function GoogleAuth() {
 function SignUp({ func }) {
     const [email, setEmail] = useState("")
     const [password, SetPassword] = useState("")
+    const [passwordShown, setPasswordShown] = useState(false)
 
     const signUp = async (e) => {
         e.preventDefault()
@@ -229,6 +231,12 @@ function SignUp({ func }) {
                 func={(e) => {
                     SetPassword(e.target.value)
                 }}
+                password={!passwordShown}
+            />
+            <Checkmark
+                func={() => {
+                    setPasswordShown(!passwordShown)
+                }}
             />
             <Button name="Sign Up" func={signUp} />
             <span className={styles.signup} onClick={func}>
@@ -242,6 +250,7 @@ function SignUp({ func }) {
 function SignIn({ func }) {
     const [email, setEmail] = useState("")
     const [password, SetPassword] = useState("")
+    const [passwordShown, setPasswordShown] = useState(false)
 
     const signInEmail = () => {
         auth.signInWithEmailAndPassword(email, password)
@@ -276,6 +285,12 @@ function SignIn({ func }) {
                 func={(e) => {
                     SetPassword(e.target.value)
                 }}
+                password={!passwordShown}
+            />
+            <Checkmark
+                func={() => {
+                    setPasswordShown(!passwordShown)
+                }}
             />
             <Button name="Sign In" func={signInEmail} />
             <span className={styles.signup} onClick={func}>
@@ -305,7 +320,9 @@ export default function enter() {
                     !username ? (
                         <ChooseUsername />
                     ) : profilePicture ? (
-                        <p>Already Signed In!</p>
+                        <p className={styles["signed-in-text"]}>
+                            Already Signed In!
+                        </p>
                     ) : (
                         <ChoosePicture />
                     )
