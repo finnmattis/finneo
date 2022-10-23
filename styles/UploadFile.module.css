@@ -1,7 +1,7 @@
 .file-input {
     width: 180px;
     height: 50px;
-    margin-top: 5px;
+    margin-top: 20px;
     border-radius: 25px;
     background-color: var(--bg);
     cursor: pointer;

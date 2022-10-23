@@ -7,7 +7,7 @@ import { auth } from "../lib/firebase"
 import styles from "../styles/Header.module.css"
 
 function Menu({ show, onClickOutside, profile_ref }) {
-    const { user, username } = useContext(UserContext)
+    const { username } = useContext(UserContext)
     const menu_ref = useRef()
     const active = show ? "active" : ""
 
@@ -52,6 +52,18 @@ function Menu({ show, onClickOutside, profile_ref }) {
                                 ></Image>
                             </div>
                             <p>Upload</p>
+                        </li>
+                    </Link>
+                    <Link href={`/users/${username}`}>
+                        <li onClick={onClickOutside}>
+                            <div className={styles.wrapper}>
+                                <Image
+                                    src="/folder.png"
+                                    width="100%"
+                                    height="100%"
+                                ></Image>
+                            </div>
+                            <p>My Videos</p>
                         </li>
                     </Link>
                     <li onClick={logout}>

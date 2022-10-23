@@ -1,6 +1,7 @@
 .root {
     height: 90vh;
-    background-color: var(--bg);
+    background-image: url("../public/bg2.webp");
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;

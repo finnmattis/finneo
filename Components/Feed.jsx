@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import Button from "../Components/Button"
-import { firestore, fromMillis } from "../lib/firebase"
+import { fromMillis } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
 
 function Video({ id, title, thumbnailURL, description }) {
@@ -33,42 +33,35 @@ function Video({ id, title, thumbnailURL, description }) {
     )
 }
 
-export default function Feed({ initial_uploads, width }) {
-    const [uploads, SetUploads] = useState(initial_uploads)
+export default function Feed({ initial_uploads, width, querry_func }) {
+    const [uploads, setUploads] = useState(initial_uploads)
     const [end, setEnd] = useState(false)
+
     const LIMIT = Math.floor(width / 25)
+    const LOAD_LIMIT = Math.floor(LIMIT / 2)
 
     useEffect(() => {
-        if (uploads.length === 0) {
+        if (initial_uploads.length === 0) {
             setEnd(true)
         }
     })
 
     const loadMore = async () => {
         const last = uploads[uploads.length - 1]
-
         const cursor =
             typeof last.createdAt === "number"
                 ? fromMillis(last.createdAt)
                 : last.createdAt
-        const uploadsQuerry = firestore
-            .collectionGroup("uploads")
-            .orderBy("createdAt", "desc")
-            .startAfter(cursor)
-            .limit(LIMIT)
+
+        const uploadsQuerry = querry_func(cursor)
         const new_uploads = (await uploadsQuerry.get()).docs.map((doc) =>
             doc.data()
         )
 
-        SetUploads(uploads.concat(new_uploads))
-
-        if (new_uploads.length < LIMIT) {
+        setUploads(uploads.concat(new_uploads))
+        if (new_uploads.length < LOAD_LIMIT) {
             setEnd(true)
         }
-    }
-
-    if (uploads.length == 0) {
-        return <p>:(</p>
     }
 
     let sections = []

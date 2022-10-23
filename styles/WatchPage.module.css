@@ -46,6 +46,7 @@
     border-radius: 50%;
     /* Auto to stop weird css margin collapsing */
     overflow: auto;
+    cursor: pointer;
 }
 
 .username {
@@ -56,7 +57,7 @@
 
 .title {
     margin: 0 0 0 20px;
-    color: var(--text-color);
+    color: white;
     font-size: 30px;
 }
 
@@ -64,6 +65,12 @@
     margin: 0 0 0 20px;
     color: var(--text-color);
     font-size: 20px;
+}
+
+.date {
+    margin: 0 0 0 20px;
+    color: var(--text-color);
+    font-size: 12px;
 }
 
 .nothing-container {
