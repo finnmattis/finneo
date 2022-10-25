@@ -26,7 +26,7 @@
 
 .info-container {
     width: 65vw;
-    height: 200px;
+    height: 25vh;
     margin: 20px;
     border-radius: 15px;
     background-color: var(--primary);

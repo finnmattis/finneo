@@ -20,7 +20,7 @@ service cloud.firestore {
 
       match /users/{userID}/uploads/{uploadID} {
         allow read;
-        allow create: if request.auth.uid == userID && hasAll(["author", "createdAt", "description", "id", "thumbnailURL", "title", "videoURL"]);
+        allow create: if request.auth.uid == userID && hasAll(["author", "createdAt", "description", "id", "thumbnailURL", "title", "videoURL", "view"]);
       }
 
         match /users/{userID}/uploads/{uploadID}/likes/{id} {
@@ -33,6 +33,11 @@ service cloud.firestore {
         allow read;
         allow create: if canDislike(userID, uploadID);
         allow delete: if request.auth.uid == resource.data.uid;
+      }
+
+      match /users/{userID}/uploads/{uploadID} {
+        allow read;
+        allow update: if validViewUpdate()
       }
       
     }
@@ -67,6 +72,12 @@ service cloud.firestore {
       let valid_id = request.auth.uid == request.resource.data.uid;
 
       return hasNotLiked && valid_fields && valid_id;
+    }
+
+    function validViewUpdate() {
+      let valid_fields = request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views',]);
+      let correct_inc = request.resource.data.views == resource.data.views + 1;
+      return valid_fields && correct_inc
     }
 
     function hasAll(fields) {

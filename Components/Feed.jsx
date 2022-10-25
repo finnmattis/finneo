@@ -38,7 +38,7 @@ export default function Feed({ initial_uploads, width, query_func }) {
     const [end, setEnd] = useState(false)
 
     const LIMIT = Math.floor(width / 25)
-    const LOAD_LIMIT = Math.floor(LIMIT / 2)
+    const LOAD_LIMIT = Math.ceil(LIMIT / 2)
 
     useEffect(() => {
         if (initial_uploads.length === 0) {

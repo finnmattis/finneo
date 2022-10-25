@@ -59,6 +59,7 @@ export default function upload() {
                             thumbnailURL: thumbUrl,
                             title: title,
                             videoURL: vidUrl,
+                            views: 0,
                         })
                         toast.success("Success!")
                     })

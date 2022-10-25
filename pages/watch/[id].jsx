@@ -43,6 +43,7 @@ export async function getServerSideProps(context) {
             title: vid.title,
             desc: vid.description,
             createdAt: moment(vid.createdAt).fromNow(),
+            views: vid.views,
             username: authorSnapshot.data().username,
             photoURL: authorSnapshot.data().photoURL,
             exists: true,
@@ -57,6 +58,7 @@ export default function WatchPage({
     title,
     desc,
     createdAt,
+    views,
     username,
     photoURL,
     exists,
@@ -88,7 +90,14 @@ export default function WatchPage({
         })
     }
 
+    const increment_views = async () => {
+        const video = (await vidQuery.get()).docs[0]
+        const views = video.data().views + 1
+        video.ref.update({ views })
+    }
+
     useEffect(() => {
+        increment_views()
         getLikes()
     }, [])
 
@@ -199,8 +208,9 @@ export default function WatchPage({
                                 </div>
                             </div>
                             <p className={styles.title}>{title}</p>
-                            <p className={styles.date}>Uploaded {createdAt}</p>
                             <p className={styles.desc}>{desc}</p>
+                            <p className={styles.date}>Views {views}</p>
+                            <p className={styles.date}>Uploaded {createdAt}</p>
                         </div>
                     </div>
                     <div className={styles["feed-container"]}>
