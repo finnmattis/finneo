@@ -33,7 +33,7 @@ function Video({ id, title, thumbnailURL, description }) {
     )
 }
 
-export default function Feed({ initial_uploads, width, querry_func }) {
+export default function Feed({ initial_uploads, width, query_func }) {
     const [uploads, setUploads] = useState(initial_uploads)
     const [end, setEnd] = useState(false)
 
@@ -53,8 +53,8 @@ export default function Feed({ initial_uploads, width, querry_func }) {
                 ? fromMillis(last.createdAt)
                 : last.createdAt
 
-        const uploadsQuerry = querry_func(cursor)
-        const new_uploads = (await uploadsQuerry.get()).docs.map((doc) =>
+        const uploadsQuery = query_func(cursor)
+        const new_uploads = (await uploadsQuery.get()).docs.map((doc) =>
             doc.data()
         )
 

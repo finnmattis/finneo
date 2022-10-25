@@ -17,7 +17,6 @@
 }
 
 .video {
-    aspect-ratio: 16/9;
     width: 65vw;
     height: 60vh;
     margin-left: 20px;
@@ -26,7 +25,7 @@
 }
 
 .info-container {
-    width: 70%;
+    width: 65vw;
     height: 200px;
     margin: 20px;
     border-radius: 15px;
@@ -42,8 +41,8 @@
     position: relative;
     width: 50px;
     height: 50px;
-    margin-left: 20px;
     border-radius: 50%;
+    margin-left: 20px;
     /* Auto to stop weird css margin collapsing */
     overflow: auto;
     cursor: pointer;
@@ -53,6 +52,19 @@
     margin-left: 20px;
     color: var(--text-color);
     font-size: 25px;
+}
+
+.like-container {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-left: 20px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg);
 }
 
 .title {

@@ -1,16 +1,16 @@
 import Feed from "../Components/Feed"
-import { firestore, fromMillis, toJSON } from "../lib/firebase"
+import { firestore, toJSON } from "../lib/firebase"
 import styles from "../styles/index.module.css"
 
 const IN_LIMIT = 6
 const LOAD_LIMIT = 3
 
 export async function getServerSideProps(context) {
-    const uploadsQuerry = firestore
+    const uploadsQuery = firestore
         .collectionGroup("uploads")
         .orderBy("createdAt", "desc")
         .limit(IN_LIMIT)
-    const uploads = (await uploadsQuerry.get()).docs.map(toJSON)
+    const uploads = (await uploadsQuery.get()).docs.map(toJSON)
 
     return {
         props: { initial_uploads: uploads },
@@ -18,7 +18,7 @@ export async function getServerSideProps(context) {
 }
 
 export default function Home({ initial_uploads }) {
-    const getQuerry = (cursor) => {
+    const getQuery = (cursor) => {
         return firestore
             .collectionGroup("uploads")
             .orderBy("createdAt", "desc")
@@ -32,7 +32,7 @@ export default function Home({ initial_uploads }) {
             <Feed
                 initial_uploads={initial_uploads}
                 width="95"
-                querry_func={getQuerry}
+                query_func={getQuery}
             />
             <div className={styles.filler}></div>
         </main>

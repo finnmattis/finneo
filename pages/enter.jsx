@@ -79,7 +79,6 @@ function ChooseUsername() {
 
     const [username, SetUsername] = useState("")
     const [isValid, setIsValid] = useState(false)
-    const [loading, setLoading] = useState(false)
 
     const write_to_db = async () => {
         const userDoc = firestore.doc(`users/${user.uid}`)
@@ -111,7 +110,6 @@ function ChooseUsername() {
                 const ref = firestore.doc(`usernames/${username}`)
                 const { exists } = await ref.get()
                 setIsValid(!exists)
-                setLoading(false)
             }
         }, 500),
         []
@@ -123,13 +121,11 @@ function ChooseUsername() {
 
         if (val.length < 3) {
             SetUsername(val)
-            setLoading(false)
             setIsValid(false)
         }
 
         if (re.test(val)) {
             SetUsername(val)
-            setLoading(true)
             setIsValid(false)
         }
     }
@@ -294,7 +290,7 @@ function SignIn({ func }) {
             />
             <Button name="Sign In" func={signInEmail} />
             <span className={styles.signup} onClick={func}>
-                Don't have an accout? Sign Up!
+                Don't have an account? Sign Up!
             </span>
             <GoogleAuth />
         </>

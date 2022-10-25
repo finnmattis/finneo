@@ -1,7 +1,6 @@
 import Image from "next/image"
-import { useEffect, useState } from "react"
 import Feed from "../../Components/Feed"
-import { firestore, fromMillis, toJSON } from "../../lib/firebase"
+import { firestore, toJSON } from "../../lib/firebase"
 import styles from "../../styles/UsernamePage.module.css"
 
 const IN_LIMIT = 6
@@ -10,8 +9,8 @@ const LOAD_LIMIT = 3
 export async function getServerSideProps(context) {
     const { username } = context.params
 
-    const idQuerry = firestore.collection("usernames").doc(username)
-    let id = await idQuerry.get()
+    const idQuery = firestore.collection("usernames").doc(username)
+    let id = await idQuery.get()
     if (id.exists) {
         id = id.data().uid
     } else {
@@ -22,17 +21,17 @@ export async function getServerSideProps(context) {
         }
     }
 
-    const ProfileQuerry = firestore.collection("users").doc(id)
-    const photoURL = (await ProfileQuerry.get()).data().photoURL
+    const ProfileQuery = firestore.collection("users").doc(id)
+    const photoURL = (await ProfileQuery.get()).data().photoURL
 
-    const uploadsQuerry = firestore
+    const uploadsQuery = firestore
         .collection("users")
         .doc(id)
         .collection("uploads")
         .orderBy("createdAt", "desc")
         .limit(IN_LIMIT)
 
-    const uploads = (await uploadsQuerry.get()).docs.map(toJSON)
+    const uploads = (await uploadsQuery.get()).docs.map(toJSON)
     return {
         props: {
             exists: true,
@@ -51,7 +50,7 @@ export default function UsernamePage({
     id,
     initial_uploads,
 }) {
-    const getQuerry = (cursor) => {
+    const getQuery = (cursor) => {
         return firestore
             .collection("users")
             .doc(id)
@@ -72,7 +71,7 @@ export default function UsernamePage({
                     <Feed
                         initial_uploads={initial_uploads}
                         width="95"
-                        querry_func={getQuerry}
+                        query_func={getQuery}
                     />
                     <div className={styles.filler}></div>
                 </>
