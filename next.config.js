@@ -11,4 +11,8 @@ module.exports = {
             "firebasestorage.googleapis.com",
         ],
     },
+    i18n: {
+        locales: ["en"],
+        defaultLocale: "en",
+    },
 }

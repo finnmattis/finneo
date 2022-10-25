@@ -66,7 +66,7 @@ export default function UsernamePage({
                 <>
                     <p className={styles.username}>{username}</p>
                     <div className={styles.profile}>
-                        <Image src={photoURL} layout="fill" />
+                        <Image src={photoURL} alt="profile" layout="fill" />
                     </div>
                     <Feed
                         initial_uploads={initial_uploads}

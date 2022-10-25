@@ -161,6 +161,7 @@ export default function WatchPage({
                                     <div className={styles.profile}>
                                         <Image
                                             src={photoURL ? photoURL : "/"}
+                                            alt="profile"
                                             layout="fill"
                                         />
                                     </div>
@@ -176,6 +177,7 @@ export default function WatchPage({
                                                 ? "/like-active.png"
                                                 : "/like.png"
                                         }
+                                        alt="like"
                                         height="30px"
                                         width="30px"
                                     ></Image>
@@ -190,6 +192,7 @@ export default function WatchPage({
                                                 ? "/dislike-active.png"
                                                 : "/dislike.png"
                                         }
+                                        alt="dislike"
                                         height="30px"
                                         width="30px"
                                     ></Image>

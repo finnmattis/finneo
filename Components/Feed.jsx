@@ -16,7 +16,7 @@ function Video({ id, title, thumbnailURL, description }) {
                 onMouseLeave={() => setHover(false)}
             >
                 <div className={`${styles.video} ${hover ? styles.hover : ""}`}>
-                    <Image src={thumbnailURL} layout="fill" />
+                    <Image src={thumbnailURL} alt="thumbnail" layout="fill" />
                 </div>
                 <h3 className={`${styles.title} ${hover ? styles.appear : ""}`}>
                     {title}

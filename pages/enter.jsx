@@ -65,6 +65,7 @@ function ChoosePicture() {
             <div className={styles["profile-preview"]}>
                 <Image
                     src={viewPic || "/user.png"}
+                    alt="profile"
                     width="200px"
                     height="200px"
                 ></Image>
@@ -176,6 +177,7 @@ function GoogleAuth() {
                     <div className={styles["auth-img"]}>
                         <Image
                             src="/google.png"
+                            alt="google"
                             height="100%"
                             width="100%"
                         ></Image>

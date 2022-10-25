@@ -11,7 +11,10 @@ function MyApp({ Component, pageProps }) {
         <UserContext.Provider value={userData}>
             <Head>
                 <title>Finneo</title>
-                <meta name="The Best Video Sharing Platform" />
+                <meta
+                    name="description"
+                    content="The Best Video Sharing Platform."
+                />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Header />

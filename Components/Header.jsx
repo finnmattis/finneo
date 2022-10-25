@@ -47,6 +47,7 @@ function Menu({ show, onClickOutside, profile_ref }) {
                             <div className={styles.wrapper}>
                                 <Image
                                     src="/upload.png"
+                                    alt="upload"
                                     width="100%"
                                     height="100%"
                                 ></Image>
@@ -59,6 +60,7 @@ function Menu({ show, onClickOutside, profile_ref }) {
                             <div className={styles.wrapper}>
                                 <Image
                                     src="/folder.png"
+                                    alt="folder"
                                     width="100%"
                                     height="100%"
                                 ></Image>
@@ -70,6 +72,7 @@ function Menu({ show, onClickOutside, profile_ref }) {
                         <div className={styles.wrapper}>
                             <Image
                                 src="/logout.png"
+                                alt="logout"
                                 width="100%"
                                 height="100%"
                             ></Image>
@@ -84,6 +87,7 @@ function Menu({ show, onClickOutside, profile_ref }) {
                             <div className={styles.wrapper}>
                                 <Image
                                     src="/login.png"
+                                    alt="login"
                                     width="100%"
                                     height="100%"
                                 ></Image>
@@ -106,7 +110,12 @@ export default function Header() {
         <header className={styles.root}>
             <Link href="/">
                 <div className={styles.logo}>
-                    <Image src={"/logo.png"} width="100%" height="100%"></Image>
+                    <Image
+                        src={"/logo.png"}
+                        alt="logo"
+                        width="100%"
+                        height="100%"
+                    ></Image>
                 </div>
             </Link>
 
@@ -117,6 +126,7 @@ export default function Header() {
             >
                 <Image
                     src={profilePicture || "/user.png"}
+                    alt="profile"
                     width="100%"
                     height="100%"
                 ></Image>

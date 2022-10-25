@@ -6,7 +6,7 @@ export default function UploadFile({ name, accept, func }) {
         <>
             <label className={styles["file-input"]} htmlFor={name}>
                 <div className={styles.wrapper}>
-                    <Image src="/upload.png" layout="fill"></Image>
+                    <Image src="/upload.png" alt="upload" layout="fill"></Image>
                 </div>
                 <p className={styles["file-input-text"]}>{name}</p>
             </label>
