@@ -1,7 +1,8 @@
+import debounce from "lodash.debounce"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import { useContext, useEffect, useState } from "react"
+import { useCallback, useContext, useEffect, useState } from "react"
 import Feed from "../../Components/Feed"
 import { UserContext } from "../../lib/context"
 import { auth, firestore, onAuthChange, toJSON } from "../../lib/firebase"
@@ -91,42 +92,49 @@ export default function WatchPage({
         getLikes()
     }, [])
 
-    const onLike = async () => {
+    const onLikeHelper = debounce(async () => {
         const vid = (await vidQuery.get()).docs[0].ref
-        setLike(!like)
 
         let likes = vid.collection("likes").doc(user.uid)
         if (!like) {
+            if (dislike) {
+                let dislikes = vid.collection("dislikes").doc(user.uid)
+                dislikes.delete()
+            }
             likes.set({
                 uid: user.uid,
             })
         } else {
             likes.delete()
         }
-        if (dislike) {
-            setDislike(false)
-            let dislikes = vid.collection("dislikes").doc(user.uid)
-            dislikes.delete()
-        }
+    }, 500)
+
+    const onLike = () => {
+        setLike(!like)
+        setDislike(false)
+        onLikeHelper()
     }
 
-    const onDislike = async () => {
+    const onDislikeHelper = debounce(async () => {
         const vid = (await vidQuery.get()).docs[0].ref
-        setDislike(!dislike)
-
         let dislikes = vid.collection("dislikes").doc(user.uid)
         if (!dislike) {
+            if (like) {
+                let likes = vid.collection("likes").doc(user.uid)
+                likes.delete()
+            }
             dislikes.set({
                 uid: user.uid,
             })
         } else {
             dislikes.delete()
         }
-        if (like) {
-            setLike(false)
-            let likes = vid.collection("likes").doc(user.uid)
-            likes.delete()
-        }
+    }, 500)
+
+    const onDislike = async () => {
+        setDislike(!dislike)
+        setLike(false)
+        onDislikeHelper()
     }
 
     const getQuery = (cursor) => {
