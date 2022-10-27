@@ -11,7 +11,7 @@ function Video({ id, title, thumbnailURL, description }) {
     return (
         <Link href={`/watch/${id}`}>
             <div
-                className={styles.container}
+                className={styles["vid-container"]}
                 onMouseEnter={() => setHover(true)}
                 onMouseLeave={() => setHover(false)}
             >
@@ -64,43 +64,22 @@ export default function Feed({ initial_uploads, width, query_func }) {
         }
     }
 
-    let sections = []
-    let i = 0
-    while (uploads.length > i) {
-        sections.push(uploads.slice(i, i + LIMIT))
-        i += LIMIT
-    }
-
     return (
-        <div
-            className={styles.root}
-            style={{ minHeight: "90vh", width: `${width}vw` }}
-        >
-            {sections.map((section, index) => {
-                return (
-                    <div
-                        style={{
-                            justifyContent:
-                                width < 50 ? "center" : "space-between",
-                        }}
-                        className={styles.section}
-                        key={index}
-                    >
-                        {section.map((upload) => {
-                            return (
-                                <Video
-                                    key={upload.id}
-                                    id={upload.id}
-                                    title={upload.title}
-                                    thumbnailURL={upload.thumbnailURL}
-                                    description={upload.description}
-                                />
-                            )
-                        })}
-                    </div>
-                )
-            })}
-            <div className={styles.center}>
+        <div className={styles.root} style={{ width: `${width}vw` }}>
+            <div className={styles.feed}>
+                {uploads.map((upload) => {
+                    return (
+                        <Video
+                            key={upload.id}
+                            id={upload.id}
+                            title={upload.title}
+                            thumbnailURL={upload.thumbnailURL}
+                            description={upload.description}
+                        />
+                    )
+                })}
+            </div>
+            <div className={styles["end-container"]}>
                 {end ? (
                     <p className={styles["end-text"]}>
                         You have reached the end!

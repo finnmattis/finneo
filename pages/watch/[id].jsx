@@ -70,7 +70,6 @@ export default function WatchPage({
     const [like, setLike] = useState(false)
     const [dislike, setDislike] = useState(false)
     let { width } = useWindowDimensions()
-    console.log(width > 1000 ? "25" : "95")
 
     const getLikes = async () => {
         const unsub = auth.onAuthStateChanged(async (cur_user) => {
@@ -236,7 +235,7 @@ export default function WatchPage({
                     <div className={styles["feed-container"]}>
                         <Feed
                             initial_uploads={initial_uploads}
-                            width={width < 1000 ? "95" : "25"}
+                            width={width && width < 1400 ? "95" : "25"}
                             query_func={getQuery}
                         />
                     </div>

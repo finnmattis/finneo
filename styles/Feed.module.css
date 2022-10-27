@@ -1,60 +1,28 @@
 .root {
+    min-height: 90vh;
     background-color: var(--primary);
     border-radius: 15px;
 }
 
-
-.section {
-    display: flex;
-    justify-content: space-between;
+.feed {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
 }
 
-.container {
-    position: relative;
-    width: 20vw;
-    height: 12vw;
-    border-radius: 25px;
+.vid-container {
     margin: 20px;
+    position: relative;
+    border-radius: 25px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
 }
 
-.title {
-    position: absolute;
-    bottom: 5px;
-    left: 16px;
-    margin-left: 10px;
-    font-size: 30px;
-    color: white;
-    transition: 0.5s;
-    visibility: hidden;
-    opacity: 0;
-}
-
-.description {
-    position: absolute;
-    bottom: 0px;
-    left: 16px;
-    margin-left: 10px;
-    font-size: 20px;
-    color: white;
-    transition: 0.5s;
-    visibility: hidden;
-    opacity: 0;
-}
-
-.appear {
-    visibility: visible;
-    opacity: 1;
-}
-
 .video {
+    aspect-ratio: 16/9;
     position: relative;
-    width: 20vw;
-    height: 12vw;
     border-radius: 25px;
-    display: inline;
     overflow: hidden;
     transition: filter 0.5s ease;
 }
@@ -63,7 +31,33 @@
     filter: blur(4px);
 }
 
-.center {
+.title {
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+    margin-left: 10px;
+    font-size: 30px;
+    color: white;
+    opacity: 0;
+    transition: 0.5s;
+}
+
+.description {
+    position: absolute;
+    bottom: 0px;
+    left: 15px;
+    margin-left: 10px;
+    font-size: 20px;
+    color: white;
+    opacity: 0;
+    transition: 0.5s;
+}
+
+.appear {
+    opacity: 1;
+}
+
+.end-container {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
