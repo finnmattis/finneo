@@ -3,8 +3,8 @@ import Feed from "../../Components/Feed"
 import { firestore, toJSON } from "../../lib/firebase"
 import styles from "../../styles/UsernamePage.module.css"
 
-const IN_LIMIT = 6
-const LOAD_LIMIT = 3
+const IN_LIMIT = 8
+const LOAD_LIMIT = 4
 
 export async function getServerSideProps(context) {
     const { username } = context.params

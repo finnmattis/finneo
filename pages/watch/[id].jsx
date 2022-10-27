@@ -11,7 +11,7 @@ import { useWindowDimensions } from "../../lib/hooks"
 import styles from "../../styles/WatchPage.module.css"
 
 const IN_LIMIT = 3
-const LOAD_LIMIT = 1
+const LOAD_LIMIT = 4
 
 export async function getServerSideProps(context) {
     const { id } = context.params
@@ -160,6 +160,8 @@ export default function WatchPage({
             } else {
                 toast.error("Not logged in!")
             }
+        } else {
+            toast.error("Can't dislike your own video!")
         }
     }
 

@@ -1,9 +1,10 @@
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState } from "react"
-import Button from "../Components/Button"
+import { useCallback, useRef, useState } from "react"
 import { fromMillis } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
+
+const LOAD_LIMIT = 4
 
 function Video({ id, title, thumbnailURL, description }) {
     const [hover, setHover] = useState(false)
@@ -37,14 +38,9 @@ export default function Feed({ initial_uploads, width, query_func }) {
     const [uploads, setUploads] = useState(initial_uploads)
     const [end, setEnd] = useState(false)
 
-    const LIMIT = Math.floor(width / 25)
-    const LOAD_LIMIT = Math.ceil(LIMIT / 2)
-
-    useEffect(() => {
-        if (initial_uploads.length === 0) {
-            setEnd(true)
-        }
-    })
+    if (initial_uploads.length === 0) {
+        setEnd(true)
+    }
 
     const loadMore = async () => {
         const last = uploads[uploads.length - 1]
@@ -64,18 +60,33 @@ export default function Feed({ initial_uploads, width, query_func }) {
         }
     }
 
+    const observer = useRef()
+    const lastVid = useCallback((node) => {
+        if (observer.current) observer.current.disconnect()
+        observer.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                loadMore()
+            }
+        })
+        if (node) observer.current.observe(node)
+    })
+
     return (
         <div className={styles.root} style={{ width: `${width}vw` }}>
             <div className={styles.feed}>
-                {uploads.map((upload) => {
+                {uploads.map((upload, index) => {
                     return (
-                        <Video
+                        <div
+                            ref={index + 1 === uploads.length ? lastVid : null}
                             key={upload.id}
-                            id={upload.id}
-                            title={upload.title}
-                            thumbnailURL={upload.thumbnailURL}
-                            description={upload.description}
-                        />
+                        >
+                            <Video
+                                id={upload.id}
+                                title={upload.title}
+                                thumbnailURL={upload.thumbnailURL}
+                                description={upload.description}
+                            />
+                        </div>
                     )
                 })}
             </div>
@@ -84,9 +95,7 @@ export default function Feed({ initial_uploads, width, query_func }) {
                     <p className={styles["end-text"]}>
                         You have reached the end!
                     </p>
-                ) : (
-                    <Button name="Load More" func={loadMore} />
-                )}
+                ) : null}
             </div>
         </div>
     )
