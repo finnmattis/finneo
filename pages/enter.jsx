@@ -10,145 +10,6 @@ import { UserContext } from "../lib/context"
 import { auth, firestore, googleAuthProvider, storage } from "../lib/firebase"
 import styles from "../styles/Enter.module.css"
 
-function ChoosePicture() {
-    const { user } = useContext(UserContext)
-    //Need to set this after username because update needs document to exist
-    if (user.photoURL) {
-        firestore
-            .collection("users")
-            .doc(auth.currentUser.uid)
-            .update({ photoURL: user.photoURL })
-    }
-
-    const [profilePic, setProfilePic] = useState(null)
-    const [viewPic, setViewPic] = useState(null)
-
-    useEffect(() => {
-        if (profilePic) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setViewPic(reader.result)
-            }
-            reader.readAsDataURL(profilePic[0])
-        } else {
-            setViewPic(null)
-        }
-    }, [profilePic])
-
-    const uploadFile = async () => {
-        const file = Array.from(profilePic)[0]
-        const extension = file.type.split("/")[1]
-
-        const ref = storage.ref(`profiles/${auth.currentUser.uid}.${extension}`)
-        const task = ref.put(file)
-
-        // Get downloadURL AFTER task resolves (Note: this is not a native Promise)
-        task.then((d) => ref.getDownloadURL()).then((url) => {
-            firestore
-                .collection("users")
-                .doc(auth.currentUser.uid)
-                .update({ photoURL: url })
-            toast.success("Success!")
-        })
-    }
-
-    return (
-        <>
-            <span className={styles.title}>Choose Picture</span>
-            <UploadFile
-                name="Profile Picture"
-                func={(e) => {
-                    setProfilePic(e.target.files)
-                }}
-            />
-            <span className={styles.preview}>Preview:</span>
-            <div className={styles["profile-preview"]}>
-                <Image
-                    src={viewPic || "/user.png"}
-                    alt="profile"
-                    width="200px"
-                    height="200px"
-                ></Image>
-            </div>
-            <Button name="Submit" func={uploadFile} disabled={!profilePic} />
-        </>
-    )
-}
-
-function ChooseUsername() {
-    const { user } = useContext(UserContext)
-
-    const [username, SetUsername] = useState("")
-    const [isValid, setIsValid] = useState(false)
-
-    const write_to_db = async () => {
-        const userDoc = firestore.doc(`users/${user.uid}`)
-        const usernameDoc = firestore.doc(`usernames/${username}`)
-
-        const batch = firestore.batch()
-        batch.set(userDoc, {
-            username: username,
-        })
-        batch.set(usernameDoc, { uid: user.uid })
-
-        await batch
-            .commit()
-            .then(() => {
-                toast.success("Success!")
-            })
-            .catch((error) => {
-                toast.error("Failed to set username")
-            })
-    }
-
-    useEffect(() => {
-        checkUsername(username)
-    }, [username])
-
-    const checkUsername = useCallback(
-        debounce(async (username) => {
-            if (username.length >= 3) {
-                const ref = firestore.doc(`usernames/${username}`)
-                const { exists } = await ref.get()
-                setIsValid(!exists)
-            }
-        }, 500),
-        []
-    )
-
-    const usernameChange = (e) => {
-        const val = e.target.value.toLowerCase()
-        const re = /^(?=[a-zA-Z0-9._]{3,15}$)(?!.*[_.]{2})[^_.].*[^_.]$/
-
-        if (val.length < 3) {
-            SetUsername(val)
-            setIsValid(false)
-        }
-
-        if (re.test(val)) {
-            SetUsername(val)
-            setIsValid(false)
-        }
-    }
-
-    return (
-        <>
-            <span className={styles.title}>Choose Username</span>
-            <Input
-                name="Username"
-                func={(e) => {
-                    usernameChange(e)
-                }}
-            />
-            <Button
-                name="Choose Username"
-                func={write_to_db}
-                disabled={!isValid}
-            />
-        </>
-    )
-}
-
 function GoogleAuth() {
     const signInGoogle = () => {
         const provider = googleAuthProvider
@@ -185,6 +46,60 @@ function GoogleAuth() {
                     <p className={styles["auth-text"]}>Continue using Google</p>
                 </div>
             </div>
+        </>
+    )
+}
+
+function SignIn({ func }) {
+    const [email, setEmail] = useState("")
+    const [password, SetPassword] = useState("")
+    const [passwordShown, setPasswordShown] = useState(false)
+
+    const signInEmail = () => {
+        auth.signInWithEmailAndPassword(email, password)
+            .then(() => {
+                toast.success("Signed in!")
+            })
+            .catch((error) => {
+                const errorCode = error.code
+                if (errorCode === "auth/invalid-email") {
+                    toast.error("Invalid Email")
+                } else if (errorCode === "auth/wrong-password") {
+                    toast.error("Wrong Password")
+                } else if (errorCode === "auth/user-not-found") {
+                    toast.error("User not found")
+                } else {
+                    toast.error("Failed to sign in")
+                }
+            })
+    }
+
+    return (
+        <>
+            <span className={styles.title}>Sign In</span>
+            <Input
+                name="Email"
+                func={(e) => {
+                    setEmail(e.target.value)
+                }}
+            />
+            <Input
+                name="Password"
+                func={(e) => {
+                    SetPassword(e.target.value)
+                }}
+                password={!passwordShown}
+            />
+            <Checkmark
+                func={() => {
+                    setPasswordShown(!passwordShown)
+                }}
+            />
+            <Button name="Sign In" func={signInEmail} />
+            <span className={styles.signup} onClick={func}>
+                Don't have an account? Sign Up!
+            </span>
+            <GoogleAuth />
         </>
     )
 }
@@ -245,84 +160,160 @@ function SignUp({ func }) {
     )
 }
 
-function SignIn({ func }) {
-    const [email, setEmail] = useState("")
-    const [password, SetPassword] = useState("")
-    const [passwordShown, setPasswordShown] = useState(false)
+function ChooseUsername({ func }) {
+    const [username, SetUsername] = useState("")
+    const [isValid, setIsValid] = useState(false)
 
-    const signInEmail = () => {
-        auth.signInWithEmailAndPassword(email, password)
-            .then(() => {
-                toast.success("Signed in!")
-            })
-            .catch((error) => {
-                const errorCode = error.code
-                if (errorCode === "auth/invalid-email") {
-                    toast.error("Invalid Email")
-                } else if (errorCode === "auth/wrong-password") {
-                    toast.error("Wrong Password")
-                } else if (errorCode === "auth/user-not-found") {
-                    toast.error("User not found")
-                } else {
-                    toast.error("Failed to sign in")
-                }
-            })
+    useEffect(() => {
+        checkUsername(username)
+    }, [username])
+
+    const checkUsername = useCallback(
+        debounce(async (username) => {
+            if (username.length >= 3) {
+                const ref = firestore.doc(`usernames/${username}`)
+                const { exists } = await ref.get()
+                setIsValid(!exists)
+            }
+        }, 500),
+        []
+    )
+
+    const usernameChange = (e) => {
+        const val = e.target.value.toLowerCase()
+        const re = /^(?=[a-zA-Z0-9._]{3,15}$)(?!.*[_.]{2})[^_.].*[^_.]$/
+
+        if (val.length < 3) {
+            SetUsername(val)
+            setIsValid(false)
+        }
+
+        if (re.test(val)) {
+            SetUsername(val)
+            setIsValid(false)
+        }
     }
 
     return (
         <>
-            <span className={styles.title}>Sign In</span>
+            <span className={styles.title}>Choose Username</span>
             <Input
-                name="Email"
+                name="Username"
                 func={(e) => {
-                    setEmail(e.target.value)
+                    usernameChange(e)
                 }}
             />
-            <Input
-                name="Password"
-                func={(e) => {
-                    SetPassword(e.target.value)
-                }}
-                password={!passwordShown}
-            />
-            <Checkmark
+            <Button
+                name="Choose Username"
                 func={() => {
-                    setPasswordShown(!passwordShown)
+                    func(username)
                 }}
+                disabled={!isValid}
             />
-            <Button name="Sign In" func={signInEmail} />
-            <span className={styles.signup} onClick={func}>
-                Don't have an account? Sign Up!
-            </span>
-            <GoogleAuth />
         </>
     )
 }
 
-function SignedIn() {
+function ChoosePicture({ func, username }) {
+    const { user } = useContext(UserContext)
+    //Need to set this after username because update needs document to exist
+    if (user.photoURL) {
+        firestore
+            .collection("users")
+            .doc(auth.currentUser.uid)
+            .update({ photoURL: user.photoURL })
+    }
+
+    const [profilePic, setProfilePic] = useState(null)
+    const [viewPic, setViewPic] = useState(null)
+
+    useEffect(() => {
+        if (profilePic) {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setViewPic(reader.result)
+            }
+            reader.readAsDataURL(profilePic[0])
+        } else {
+            setViewPic(null)
+        }
+    }, [profilePic])
+
+    const uploadFile = async () => {
+        //Upload to storage
+        const file = Array.from(profilePic)[0]
+        const extension = file.type.split("/")[1]
+
+        const ref = storage.ref(`profiles/${auth.currentUser.uid}.${extension}`)
+        const task = ref.put(file)
+
+        // Get downloadURL AFTER task resolves (Note: this is not a native Promise)
+        let url = await task.then((d) => ref.getDownloadURL())
+
+        // Write to db
+        const userDoc = firestore.doc(`users/${user.uid}`)
+        const usernameDoc = firestore.doc(`usernames/${username}`)
+
+        const batch = firestore.batch()
+        batch.set(userDoc, {
+            username,
+            photoURL: url,
+        })
+        batch.set(usernameDoc, { uid: user.uid })
+
+        await batch.commit().catch((error) => {
+            console.log(error)
+            toast.error("Failed to set username")
+        })
+
+        toast.success("Success!")
+        func(profilePic)
+    }
+
     return (
-        <div>
-            <p>Already Signed In</p>
-        </div>
+        <>
+            <span className={styles.title}>Choose Picture</span>
+            <UploadFile
+                name="Profile Picture"
+                func={(e) => {
+                    setProfilePic(e.target.files)
+                }}
+            />
+            <span className={styles.preview}>Preview:</span>
+            <div className={styles["profile-preview"]}>
+                <Image
+                    src={viewPic || "/user.png"}
+                    alt="profile"
+                    width="200px"
+                    height="200px"
+                ></Image>
+            </div>
+            <Button name="Submit" func={uploadFile} disabled={!profilePic} />
+        </>
     )
 }
 
 export default function enter() {
-    const { user, username, profilePicture } = useContext(UserContext)
+    const { user } = useContext(UserContext)
     const [signUp, setSignUp] = useState(false)
+    const [username, setUsername] = useState("")
+    const [profilePic, setProfilePic] = useState("")
 
     return (
         <main className={styles.root}>
             <div className={styles.container}>
                 {user ? (
                     !username ? (
-                        <ChooseUsername />
-                    ) : profilePicture ? (
+                        <ChooseUsername func={setUsername} />
+                    ) : profilePic ? (
                         <p className={styles["signed-in-text"]}>
                             Already Signed In!
                         </p>
                     ) : (
-                        <ChoosePicture />
+                        <ChoosePicture
+                            func={setProfilePic}
+                            username={username}
+                        />
                     )
                 ) : signUp ? (
                     <SignUp func={() => setSignUp(false)} />

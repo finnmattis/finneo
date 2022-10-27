@@ -106,6 +106,19 @@ export default function Header() {
     const profile_ref = useRef()
     const [menuShown, setMenuShown] = useState(false)
 
+    const handleEscape = (e) => {
+        if (e.key === "Escape") {
+            setMenuShown(false)
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener("keydown", handleEscape, false)
+        return () => {
+            document.removeEventListener("keydown", handleEscape, false)
+        }
+    }, [])
+
     return (
         <header className={styles.root}>
             <Link href="/">

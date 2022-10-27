@@ -9,6 +9,7 @@
 
 .vid-container {
     width: 70vw;
+    margin-top: 20px;
 }
 
 .feed-container {
@@ -94,4 +95,35 @@
 .nothing-text {
     color: var(--text-color);
     font-size: 30px;
+}
+
+/* Media Query max-size 1000px */
+@media screen and (max-width: 1000px) {
+
+    .watch-container {
+        flex-direction: column;
+    }
+
+    .vid-container {
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .video {
+        width: 95vw;
+        height: 50vh;
+        margin: 0;
+    }
+
+    .info-container {
+        width: 95vw;
+        height: 30vh;
+    }
+
+    .feed-container {
+        justify-content: center;
+    }
 }

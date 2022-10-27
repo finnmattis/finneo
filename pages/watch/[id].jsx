@@ -2,10 +2,12 @@ import debounce from "lodash.debounce"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import { useCallback, useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import Feed from "../../Components/Feed"
 import { UserContext } from "../../lib/context"
-import { auth, firestore, onAuthChange, toJSON } from "../../lib/firebase"
+import { auth, firestore, toJSON } from "../../lib/firebase"
+import { useWindowDimensions } from "../../lib/hooks"
 import styles from "../../styles/WatchPage.module.css"
 
 const IN_LIMIT = 3
@@ -44,7 +46,7 @@ export async function getServerSideProps(context) {
             desc: vid.description,
             createdAt: moment(vid.createdAt).fromNow(),
             views: vid.views,
-            username: authorSnapshot.data().username,
+            author_username: authorSnapshot.data().username,
             photoURL: authorSnapshot.data().photoURL,
             exists: true,
         },
@@ -59,14 +61,16 @@ export default function WatchPage({
     desc,
     createdAt,
     views,
-    username,
+    author_username,
     photoURL,
     exists,
 }) {
-    const { user } = useContext(UserContext)
+    const { user, username } = useContext(UserContext)
     const vidQuery = firestore.collectionGroup("uploads").where("id", "==", id)
     const [like, setLike] = useState(false)
     const [dislike, setDislike] = useState(false)
+    let { width } = useWindowDimensions()
+    console.log(width > 1000 ? "25" : "95")
 
     const getLikes = async () => {
         const unsub = auth.onAuthStateChanged(async (cur_user) => {
@@ -119,9 +123,17 @@ export default function WatchPage({
     }, 500)
 
     const onLike = () => {
-        setLike(!like)
-        setDislike(false)
-        onLikeHelper()
+        if (author_username != username) {
+            if (user) {
+                setLike(!like)
+                setDislike(false)
+                onLikeHelper()
+            } else {
+                toast.error("Not logged in!")
+            }
+        } else {
+            toast.error("Can't like your own video!")
+        }
     }
 
     const onDislikeHelper = debounce(async () => {
@@ -141,9 +153,15 @@ export default function WatchPage({
     }, 500)
 
     const onDislike = async () => {
-        setDislike(!dislike)
-        setLike(false)
-        onDislikeHelper()
+        if (author_username != username) {
+            if (user) {
+                setDislike(!dislike)
+                setLike(false)
+                onDislikeHelper()
+            } else {
+                toast.error("Not logged in!")
+            }
+        }
     }
 
     const getQuery = (cursor) => {
@@ -166,7 +184,7 @@ export default function WatchPage({
                         />
                         <div className={styles["info-container"]}>
                             <div className={styles["author-container"]}>
-                                <Link href={`/users/${username}`}>
+                                <Link href={`/users/${author_username}`}>
                                     <div className={styles.profile}>
                                         <Image
                                             src={photoURL ? photoURL : "/"}
@@ -175,7 +193,9 @@ export default function WatchPage({
                                         />
                                     </div>
                                 </Link>
-                                <p className={styles.username}>{username}</p>
+                                <p className={styles.username}>
+                                    {author_username}
+                                </p>
                                 <div
                                     className={styles["like-container"]}
                                     onClick={onLike}
@@ -216,7 +236,7 @@ export default function WatchPage({
                     <div className={styles["feed-container"]}>
                         <Feed
                             initial_uploads={initial_uploads}
-                            width="25"
+                            width={width < 1000 ? "95" : "25"}
                             query_func={getQuery}
                         />
                     </div>

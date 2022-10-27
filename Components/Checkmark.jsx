@@ -4,7 +4,7 @@ import styles from "../styles/Checkmark.module.css"
 export default function Checkmark({ func }) {
     const [checked, setChecked] = useState(false)
     return (
-        <label class={styles.root}>
+        <label className={styles.root}>
             <p className={styles.text}>Show Password</p>
             <input
                 type="checkbox"
@@ -14,7 +14,7 @@ export default function Checkmark({ func }) {
                     func()
                 }}
             />
-            <span class={styles.checkmark}></span>
+            <span className={styles.checkmark}></span>
         </label>
     )
 }

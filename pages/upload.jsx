@@ -44,8 +44,6 @@ export default function upload() {
                 thumbTask
                     .then((d) => thumbRef.getDownloadURL())
                     .then((thumbUrl) => {
-                        console.log(desc)
-                        console.log(title)
                         let doc = firestore
                             .collection("users")
                             .doc(user.uid)
