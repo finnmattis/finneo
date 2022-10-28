@@ -8,12 +8,16 @@
 }
 
 .feed-container {
+    width: 35vw;
     margin: 2.5vw 0 2.5vw 0;
+    display: flex;
+    justify-content: center;
 }
 
 .video {
     width: 65vw;
     margin: 2.5vw;
+    margin-right: 0;
     border-radius: 15px;
     object-fit: contain;
 }
@@ -74,10 +78,10 @@
     font-size: 20px;
 }
 
-.date {
+.views {
     margin: 0 0 0 20px;
     color: var(--text-color);
-    font-size: 12px;
+    font-size: 20px;
 }
 
 .nothing-container {
@@ -114,6 +118,7 @@
     }
 
     .feed-container {
+        width: 100vw;
         display: flex;
         justify-content: center;
     }

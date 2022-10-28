@@ -230,8 +230,9 @@ export default function WatchPage({
                             </div>
                             <p className={styles.title}>{title}</p>
                             <p className={styles.desc}>{desc}</p>
-                            <p className={styles.date}>Views {views}</p>
-                            <p className={styles.date}>Uploaded {createdAt}</p>
+                            <p className={styles.views}>
+                                Views {views} • {createdAt}
+                            </p>
                         </div>
                     </div>
                     <div className={styles["feed-container"]}>

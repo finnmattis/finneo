@@ -1,3 +1,4 @@
+import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useRef, useState } from "react"
@@ -6,29 +7,64 @@ import styles from "../styles/Feed.module.css"
 
 const LOAD_LIMIT = 4
 
-function Video({ id, title, thumbnailURL, description }) {
-    const [hover, setHover] = useState(false)
-
+function Video({
+    width,
+    id,
+    profile,
+    author,
+    title,
+    thumbnailURL,
+    views,
+    createdAt,
+}) {
+    const vert = width <= 25
     return (
         <Link href={`/watch/${id}`}>
             <div
-                className={styles["vid-container"]}
-                onMouseEnter={() => setHover(true)}
-                onMouseLeave={() => setHover(false)}
+                className={
+                    vert
+                        ? styles["vid-container-vert"]
+                        : styles["vid-container"]
+                }
             >
-                <div className={`${styles.video} ${hover ? styles.hover : ""}`}>
+                <div className={styles.video}>
                     <Image src={thumbnailURL} alt="thumbnail" layout="fill" />
                 </div>
-                <h3 className={`${styles.title} ${hover ? styles.appear : ""}`}>
-                    {title}
-                </h3>
-                <h1
-                    className={`${styles.description} ${
-                        hover ? styles.appear : ""
-                    }`}
-                >
-                    {description}
-                </h1>
+                <div className={styles["info-container"]}>
+                    <div
+                        className={styles.profile}
+                        style={{ display: vert ? "none" : "" }}
+                    >
+                        <Image
+                            src={profile || "/user.png"}
+                            alt="profile"
+                            layout="fill"
+                        ></Image>
+                    </div>
+                    <div className={styles["text-container"]}>
+                        <h3
+                            className={`${styles.title} ${
+                                vert ? styles["title-vert"] : ""
+                            }`}
+                        >
+                            {title}
+                        </h3>
+                        <h3
+                            className={`${styles["misc-text"]} ${
+                                vert ? styles["misc-text-vert"] : ""
+                            }`}
+                        >
+                            Finn
+                        </h3>
+                        <h1
+                            className={`${styles["misc-text"]} ${
+                                vert ? styles["misc-text-vert"] : ""
+                            }`}
+                        >
+                            {views} views • {createdAt}
+                        </h1>
+                    </div>
+                </div>
             </div>
         </Link>
     )
@@ -37,12 +73,14 @@ function Video({ id, title, thumbnailURL, description }) {
 export default function Feed({ initial_uploads, width, query_func }) {
     const [uploads, setUploads] = useState(initial_uploads)
     const [end, setEnd] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     if (initial_uploads.length === 0) {
         setEnd(true)
     }
 
     const loadMore = async () => {
+        setLoading(true)
         const last = uploads[uploads.length - 1]
         const cursor =
             typeof last.createdAt === "number"
@@ -58,10 +96,12 @@ export default function Feed({ initial_uploads, width, query_func }) {
         if (new_uploads.length < LOAD_LIMIT) {
             setEnd(true)
         }
+        setLoading(false)
     }
 
     const observer = useRef()
     const lastVid = useCallback((node) => {
+        if (loading || end) return
         if (observer.current) observer.current.disconnect()
         observer.current = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
@@ -81,21 +121,18 @@ export default function Feed({ initial_uploads, width, query_func }) {
                             key={upload.id}
                         >
                             <Video
+                                width={width}
                                 id={upload.id}
+                                photoURL={upload.photoURL}
+                                author={upload.author}
                                 title={upload.title}
                                 thumbnailURL={upload.thumbnailURL}
-                                description={upload.description}
+                                views={upload.views}
+                                createdAt={moment(upload.createdAt).fromNow()}
                             />
                         </div>
                     )
                 })}
-            </div>
-            <div className={styles["end-container"]}>
-                {end ? (
-                    <p className={styles["end-text"]}>
-                        You have reached the end!
-                    </p>
-                ) : null}
             </div>
         </div>
     )
