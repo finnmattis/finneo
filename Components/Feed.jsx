@@ -1,7 +1,8 @@
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import toast from "react-hot-toast"
 import { fromMillis } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
 
@@ -75,9 +76,11 @@ export default function Feed({ initial_uploads, width, query_func }) {
     const [end, setEnd] = useState(false)
     const [loading, setLoading] = useState(false)
 
-    if (initial_uploads.length === 0) {
-        setEnd(true)
-    }
+    useEffect(() => {
+        if (initial_uploads.length === 0) {
+            setEnd(true)
+        }
+    }, [])
 
     const loadMore = async () => {
         setLoading(true)
@@ -88,9 +91,11 @@ export default function Feed({ initial_uploads, width, query_func }) {
                 : last.createdAt
 
         const uploadsQuery = query_func(cursor)
-        const new_uploads = (await uploadsQuery.get()).docs.map((doc) =>
-            doc.data()
-        )
+        const new_uploads = await uploadsQuery.get().catch(() => {
+            toast.error("Failed to load more videos")
+            return
+        })
+        new_uploads = new_uploads.docs.map((doc) => doc.data())
 
         setUploads(uploads.concat(new_uploads))
         if (new_uploads.length < LOAD_LIMIT) {

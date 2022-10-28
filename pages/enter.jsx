@@ -164,10 +164,6 @@ function ChooseUsername({ func }) {
     const [username, SetUsername] = useState("")
     const [isValid, setIsValid] = useState(false)
 
-    useEffect(() => {
-        checkUsername(username)
-    }, [username])
-
     const checkUsername = useCallback(
         debounce(async (username) => {
             if (username.length >= 3) {
@@ -191,6 +187,7 @@ function ChooseUsername({ func }) {
         if (re.test(val)) {
             SetUsername(val)
             setIsValid(false)
+            checkUsername(val)
         }
     }
 
@@ -216,13 +213,6 @@ function ChooseUsername({ func }) {
 
 function ChoosePicture({ func, username }) {
     const { user } = useContext(UserContext)
-    //Need to set this after username because update needs document to exist
-    if (user.photoURL) {
-        firestore
-            .collection("users")
-            .doc(auth.currentUser.uid)
-            .update({ photoURL: user.photoURL })
-    }
 
     const [profilePic, setProfilePic] = useState(null)
     const [viewPic, setViewPic] = useState(null)
@@ -238,6 +228,28 @@ function ChoosePicture({ func, username }) {
             setViewPic(null)
         }
     }, [profilePic])
+
+    const checkExistingPic = async () => {
+        if (user.photoURL) {
+            const userDoc = firestore.doc(`users/${user.uid}`)
+            const usernameDoc = firestore.doc(`usernames/${username}`)
+            const batch = firestore.batch()
+            batch.set(userDoc, {
+                username,
+                photoURL: user.photoURL,
+            })
+            batch.set(usernameDoc, { uid: user.uid })
+
+            await batch.commit().catch(() => {
+                toast.error("Failed to set username")
+            })
+            func(user.photoURL)
+        }
+    }
+
+    useEffect(() => {
+        checkExistingPic()
+    }, [])
 
     const uploadFile = async () => {
         //Upload to storage
@@ -264,6 +276,7 @@ function ChoosePicture({ func, username }) {
         await batch.commit().catch((error) => {
             console.log(error)
             toast.error("Failed to set username")
+            return
         })
 
         toast.success("Success!")
@@ -294,26 +307,32 @@ function ChoosePicture({ func, username }) {
 }
 
 export default function enter() {
-    const { user } = useContext(UserContext)
-    const [signUp, setSignUp] = useState(false)
+    //Need to progress pages if info was just entered or is stored in DB
+    const {
+        user,
+        username: storedUsername,
+        profilePicture: storedProfilePicture,
+    } = useContext(UserContext)
     const [username, setUsername] = useState("")
-    const [profilePic, setProfilePic] = useState("")
+
+    const [signUp, setSignUp] = useState(false)
+    const [profilePicture, setProfilePicture] = useState("")
 
     return (
         <main className={styles.root}>
             <div className={styles.container}>
                 {user ? (
-                    !username ? (
+                    !username && !storedUsername ? (
                         <ChooseUsername func={setUsername} />
-                    ) : profilePic ? (
+                    ) : !profilePicture && !storedProfilePicture ? (
+                        <ChoosePicture
+                            func={setProfilePicture}
+                            username={username}
+                        />
+                    ) : (
                         <p className={styles["signed-in-text"]}>
                             Already Signed In!
                         </p>
-                    ) : (
-                        <ChoosePicture
-                            func={setProfilePic}
-                            username={username}
-                        />
                     )
                 ) : signUp ? (
                     <SignUp func={() => setSignUp(false)} />

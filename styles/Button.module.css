@@ -12,6 +12,10 @@
     justify-content: center;
 }
 
+.disabled {
+    background-color: var(--text-color);
+}
+
 .button-text {
     color: white;
     font-size: 20px;
