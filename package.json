@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "algoliasearch": "^4.14.2",
     "firebase": "^9.12.1",
     "lodash.debounce": "^4.0.8",
     "moment": "^2.29.4",
@@ -17,6 +18,7 @@
     "react-dom": "18.2.0",
     "react-firebase-hooks": "^5.0.3",
     "react-hot-toast": "^2.4.0",
+    "react-instantsearch-hooks-web": "^6.38.0",
     "sharp": "^0.31.1"
   },
   "devDependencies": {

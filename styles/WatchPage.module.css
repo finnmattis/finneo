@@ -1,6 +1,12 @@
 .root {
+    position: relative;
     min-height: 90vh;
     background-color: var(--bg);
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
 }
 
 .watch-container {

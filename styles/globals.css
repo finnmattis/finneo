@@ -17,3 +17,57 @@ body {
   --text-color: rgb(140, 140, 160);
   --accent: rgb(50, 90, 240);
 }
+
+/* .ais-SearchBox-input {
+  width: 70vw;
+  height: 50px;
+  margin-top: 20px;
+  border-radius: 15px;
+  appearance: none;
+  outline: none;
+  border: none;
+  background-color: var(--primary);
+  font-size: 30px;
+  color: white;
+}
+
+.ais-InfiniteHits {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ais-InfiniteHits-loadPrevious,
+.ais-InfiniteHits-loadMore {
+  background-color: var(--primary);
+  outline: none;
+  border: none;
+  appearance: none;
+  color: white;
+  border-radius: 15px;
+  width: 25vw;
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+}
+
+.ais-InfiniteHits-loadPrevious--disabled,
+.ais-InfiniteHits-loadMore--disabled {
+  background-color: var(--text-color);
+}
+
+.ais-SearchBox-submit {
+  display: none;
+}
+
+.ais-SearchBox-reset {
+  display: none;
+}
+
+@media screen and (max-width: 1400px) {
+  .ais-SearchBox-input {
+    height: 30px
+  }
+} */

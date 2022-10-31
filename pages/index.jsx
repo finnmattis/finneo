@@ -1,4 +1,5 @@
 import Feed from "../Components/Feed"
+import Search from "../Components/Search"
 import { firestore, toJSON } from "../lib/firebase"
 import styles from "../styles/index.module.css"
 
@@ -28,6 +29,7 @@ export default function Home({ initial_uploads }) {
 
     return (
         <main className={styles.root}>
+            <Search />
             <div className={styles.filler}></div>
             <Feed
                 initial_uploads={initial_uploads}

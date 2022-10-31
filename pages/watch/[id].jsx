@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useContext, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import Feed from "../../Components/Feed"
+import Search from "../../Components/Search"
 import { UserContext } from "../../lib/context"
 import { auth, firestore, toJSON } from "../../lib/firebase"
 import { useWindowDimensions } from "../../lib/hooks"
@@ -175,6 +176,9 @@ export default function WatchPage({
 
     return (
         <div className={styles.root}>
+            <div className={styles["search-container"]}>
+                <Search />
+            </div>
             {exists ? (
                 <div className={styles["watch-container"]}>
                     <div className={styles["vid-container"]}>
