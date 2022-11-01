@@ -6,11 +6,12 @@ import styles from "../styles/Search.module.css"
 
 export function Hits(props) {
     const { hits } = useHits(props)
+    const num_hits = 5
     return (
         <div>
             <div className={styles["hits-list"]}>
                 {hits.length > 0 ? (
-                    hits.map((hit) => (
+                    hits.slice(0, num_hits).map((hit) => (
                         <Link key={hit.objectID} href={`/watch/${hit.id}`}>
                             <div className={styles.hit}>
                                 <p>{hit.title}</p>
@@ -33,6 +34,7 @@ function SearchBox({ func }) {
     const handleEscape = (e) => {
         if (e.key === "Escape") {
             inputRef.current.blur()
+            func(false)
         }
         if (e.key === "/") {
             // Stop '/' from going to search bar
@@ -79,9 +81,6 @@ function SearchBox({ func }) {
             onFocus={(e) => {
                 func(true)
             }}
-            onBlur={(e) => {
-                func(false)
-            }}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -92,7 +91,24 @@ function SearchBox({ func }) {
 
 export default function Search() {
     const [searchShown, setSearchShown] = useState(false)
+    const searchRef = useRef()
     const hitsRef = useRef()
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                hitsRef.current &&
+                !hitsRef.current.contains(event.target) &&
+                !searchRef.current.contains(event.target)
+            ) {
+                setSearchShown(false)
+            }
+        }
+        document.addEventListener("click", handleClickOutside, true)
+        return () => {
+            document.removeEventListener("click", handleClickOutside, true)
+        }
+    }, [])
 
     const searchClient = algoliasearch(
         "UWZVYKMWW2",
@@ -101,7 +117,9 @@ export default function Search() {
 
     return (
         <InstantSearch searchClient={searchClient} indexName="finneo">
-            <SearchBox func={setSearchShown} />
+            <div ref={searchRef}>
+                <SearchBox func={setSearchShown} />
+            </div>
             <div
                 className={`${styles["hits-container"]} ${
                     searchShown ? styles.shown : ""

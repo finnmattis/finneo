@@ -9,12 +9,12 @@ service cloud.firestore {
 
       match /users/{userID} {
         allow read;
-        allow create;
+        allow create: if isValidUser(userID);
       }
 
       match /usernames/{username} {
         allow read;
-        allow create;
+        allow create: if isValidUsername(username);
       }
 
       match /users/{userID}/uploads/{uploadID} {
@@ -48,7 +48,7 @@ service cloud.firestore {
       let valid_fields = hasAll(["username", "photoURL"]);
       let valid_types = request.resource.data.username is string && request.resource.data.photoURL is string;
 
-      return isOwner && username && createdValidUsername && valid_fields && valid_types;
+      return isOwner && createdValidUsername && valid_fields && valid_types;
     }
 
     function isValidUsername(username) {

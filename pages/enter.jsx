@@ -243,7 +243,7 @@ function ChoosePicture({ func, username }) {
             await batch.commit().catch(() => {
                 toast.error("Failed to set username")
             })
-            func(user.photoURL)
+            func(true)
         }
     }
 
@@ -280,7 +280,7 @@ function ChoosePicture({ func, username }) {
         })
 
         toast.success("Success!")
-        func(profilePic)
+        func(true)
     }
 
     return (
@@ -316,7 +316,7 @@ export default function enter() {
     const [username, setUsername] = useState("")
 
     const [signUp, setSignUp] = useState(false)
-    const [profilePicture, setProfilePicture] = useState("")
+    const [isProfilePicture, setIsProfilePicture] = useState(false)
 
     return (
         <main className={styles.root}>
@@ -324,9 +324,9 @@ export default function enter() {
                 {user ? (
                     !username && !storedUsername ? (
                         <ChooseUsername func={setUsername} />
-                    ) : !profilePicture && !storedProfilePicture ? (
+                    ) : !isProfilePicture && !storedProfilePicture ? (
                         <ChoosePicture
-                            func={setProfilePicture}
+                            func={setIsProfilePicture}
                             username={username}
                         />
                     ) : (

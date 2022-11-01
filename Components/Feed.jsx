@@ -18,7 +18,7 @@ function Video({
     views,
     createdAt,
 }) {
-    const vert = width <= 25
+    const vert = width <= 30
     return (
         <Link href={`/watch/${id}`}>
             <div

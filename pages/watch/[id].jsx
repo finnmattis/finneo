@@ -242,7 +242,7 @@ export default function WatchPage({
                     <div className={styles["feed-container"]}>
                         <Feed
                             initial_uploads={initial_uploads}
-                            width={width && width < 1400 ? "95" : "25"}
+                            width={width && width < 1400 ? "95" : "30"}
                             query_func={getQuery}
                         />
                     </div>
