@@ -10,13 +10,27 @@ function Video({
     width,
     id,
     profile,
-    author,
+    author_id,
     title,
     thumbnailURL,
     views,
     createdAt,
 }) {
     const vert = width <= 30
+    const [author, setAuthor] = useState("User")
+    const [authorPhotoURL, setAuthorPhotoURL] = useState(null)
+
+    const getAuthorData = async () => {
+        const authorQuery = firestore.collection("users").doc(author_id)
+        let data = (await authorQuery.get()).data()
+        setAuthor(data.username)
+        setAuthorPhotoURL(data.photoURL)
+    }
+
+    useEffect(() => {
+        getAuthorData()
+    }, [])
+
     return (
         <Link href={`/watch/${id}`}>
             <div
@@ -35,7 +49,7 @@ function Video({
                         style={{ display: vert ? "none" : "inline-block" }}
                     >
                         <Image
-                            src={profile || "/user.png"}
+                            src={authorPhotoURL || "/user.png"}
                             alt="profile"
                             layout="fill"
                         ></Image>
@@ -53,7 +67,7 @@ function Video({
                                 vert ? styles["misc-text-vert"] : ""
                             }`}
                         >
-                            Finn
+                            {author}
                         </h3>
                         <h1
                             className={`${styles["misc-text"]} ${
@@ -180,7 +194,7 @@ export default function Feed({ initial_uploads, width, LOAD_LIMIT, IN_LIMIT }) {
                                 width={width}
                                 id={upload.id}
                                 photoURL={upload.photoURL}
-                                author={upload.author}
+                                author_id={upload.author}
                                 title={upload.title}
                                 thumbnailURL={upload.thumbnailURL}
                                 views={upload.views}
