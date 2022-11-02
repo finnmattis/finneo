@@ -3,10 +3,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { fromMillis } from "../lib/firebase"
+import { firestore, fromMillis, toJSON } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
-
-const LOAD_LIMIT = 4
 
 function Video({
     width,
@@ -34,7 +32,7 @@ function Video({
                 <div className={styles["info-container"]}>
                     <div
                         className={styles.profile}
-                        style={{ display: vert ? "none" : "" }}
+                        style={{ display: vert ? "none" : "inline-block" }}
                     >
                         <Image
                             src={profile || "/user.png"}
@@ -71,42 +69,81 @@ function Video({
     )
 }
 
-export default function Feed({ initial_uploads, width, query_func }) {
+export default function Feed({ initial_uploads, width, LOAD_LIMIT, IN_LIMIT }) {
+    //Idea of newUploads and oldUploads is to keep what the other one was to not have to make unnecessary calls to the database
+    const [newUploads, setNewUploads] = useState(initial_uploads)
+    const [oldUploads, setOldUploads] = useState([])
     const [uploads, setUploads] = useState(initial_uploads)
-    const [end, setEnd] = useState(false)
-    const [loading, setLoading] = useState(false)
+    const [filterIsNew, setFilterIsNew] = useState(true)
+
+    const [newEnd, setNewEnd] = useState(false)
+    const [oldEnd, setOldEnd] = useState(false)
 
     useEffect(() => {
         if (initial_uploads.length === 0) {
-            setEnd(true)
+            setNewEnd(true)
+            setOldEnd(true)
         }
     }, [])
 
+    const onFilterChange = async () => {
+        if (filterIsNew) {
+            //Load old uploads on first time
+            if (oldUploads.length === 0) {
+                const uploadsQuery = firestore
+                    .collectionGroup("uploads")
+                    .orderBy("createdAt")
+                    .limit(IN_LIMIT)
+                const uploads = (await uploadsQuery.get()).docs.map(toJSON)
+                setOldUploads(uploads)
+                setUploads(uploads)
+            } else {
+                setUploads(oldUploads)
+            }
+        } else {
+            setUploads(newUploads)
+        }
+        setFilterIsNew(!filterIsNew)
+    }
+
     const loadMore = async () => {
-        setLoading(true)
         const last = uploads[uploads.length - 1]
         const cursor =
             typeof last.createdAt === "number"
                 ? fromMillis(last.createdAt)
                 : last.createdAt
+        const uploadsQuerry = firestore
+            .collectionGroup("uploads")
+            .orderBy("createdAt", filterIsNew ? "desc" : "asc")
+            .startAfter(cursor)
+            .limit(LOAD_LIMIT)
 
-        const uploadsQuery = query_func(cursor)
-        const new_uploads = await uploadsQuery.get().catch(() => {
+        const new_uploads = await uploadsQuerry.get().catch(() => {
             toast.error("Failed to load more videos")
             return
         })
         new_uploads = new_uploads.docs.map((doc) => doc.data())
 
-        setUploads(uploads.concat(new_uploads))
-        if (new_uploads.length < LOAD_LIMIT) {
-            setEnd(true)
+        setUploads([...uploads, ...new_uploads])
+        if (filterIsNew) {
+            setNewUploads([...newUploads, ...new_uploads])
+        } else {
+            setOldUploads([...oldUploads, ...new_uploads])
         }
-        setLoading(false)
+
+        if (new_uploads.length === 0) {
+            if (filterIsNew) {
+                setNewEnd(true)
+            } else {
+                setOldEnd(true)
+            }
+        }
     }
 
+    //Detect last video being visible
     const observer = useRef()
     const lastVid = useCallback((node) => {
-        if (loading || end) return
+        if ((filterIsNew && newEnd) || (!filterIsNew && oldEnd)) return
         if (observer.current) observer.current.disconnect()
         observer.current = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
@@ -118,11 +155,25 @@ export default function Feed({ initial_uploads, width, query_func }) {
 
     return (
         <div className={styles.root} style={{ width: `${width}vw` }}>
+            <button
+                className={styles.filter}
+                onClick={onFilterChange}
+                disabled={filterIsNew}
+            >
+                New
+            </button>
+            <button
+                className={styles.filter}
+                onClick={onFilterChange}
+                disabled={!filterIsNew}
+            >
+                Old
+            </button>
             <div className={styles.feed}>
                 {uploads.map((upload, index) => {
                     return (
                         <div
-                            ref={index + 1 === uploads.length ? lastVid : null}
+                            ref={index === uploads.length - 1 ? lastVid : null}
                             key={upload.id}
                         >
                             <Video

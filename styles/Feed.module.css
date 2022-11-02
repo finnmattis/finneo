@@ -4,6 +4,24 @@
     border-radius: 15px;
 }
 
+.filter {
+    width: 100px;
+    min-height: 40px;
+    margin: 20px;
+    border-radius: 15px;
+    appearance: none;
+    border: none;
+    outline: none;
+    background-color: var(--bg);
+    color: white;
+    text-align: center;
+    cursor: pointer;
+}
+
+.filter:disabled {
+    background-color: var(--accent);
+}
+
 .feed {
     display: grid;
     gap: 20px;

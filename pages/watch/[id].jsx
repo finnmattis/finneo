@@ -243,7 +243,8 @@ export default function WatchPage({
                         <Feed
                             initial_uploads={initial_uploads}
                             width={width && width < 1400 ? "95" : "30"}
-                            query_func={getQuery}
+                            LOAD_LIMIT={LOAD_LIMIT}
+                            IN_LIMIT={IN_LIMIT}
                         />
                     </div>
                 </div>

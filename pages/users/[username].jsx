@@ -71,7 +71,8 @@ export default function UsernamePage({
                     <Feed
                         initial_uploads={initial_uploads}
                         width="95"
-                        query_func={getQuery}
+                        LOAD_LIMIT={LOAD_LIMIT}
+                        IN_LIMIT={IN_LIMIT}
                     />
                     <div className={styles.filler}></div>
                 </>

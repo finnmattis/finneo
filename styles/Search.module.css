@@ -23,12 +23,12 @@
     z-index: 1;
     background-color: var(--bg);
     color: white;
-    opacity: 0;
+    display: none;
     transition: 0.25s;
 }
 
 .shown {
-    opacity: 1;
+    display: inline-block;
 }
 
 .hits-list {

@@ -274,7 +274,6 @@ function ChoosePicture({ func, username }) {
         batch.set(usernameDoc, { uid: user.uid })
 
         await batch.commit().catch((error) => {
-            console.log(error)
             toast.error("Failed to set username")
             return
         })
