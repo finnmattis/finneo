@@ -39,6 +39,11 @@ service cloud.firestore {
         allow update: if validViewUpdate()
       }
       
+      match /users/{userID}/uploads/{uploadID}/comment/{commentID} {
+        allow read;
+      	allow write;
+      }
+      
     }
 
     function isValidUser(userID) {

@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useContext, useEffect, useState } from "react"
 import toast from "react-hot-toast"
+import CommentSection from "../../Components/CommentSection"
 import Feed from "../../Components/Feed"
 import Search from "../../Components/Search"
 import { UserContext } from "../../lib/context"
@@ -20,15 +21,17 @@ export async function getServerSideProps(context) {
     const videoQuery = firestore
         .collectionGroup("uploads")
         .where("id", "==", id)
-    let vidSnapshot = (await videoQuery.get()).docs.map(toJSON)
-    if (vidSnapshot.empty) {
+    let vidSnapshot = await videoQuery.get()
+    let vid = vidSnapshot.docs.map(toJSON)
+    if (vid.empty) {
         return {
             props: {
                 empty: true,
             },
         }
     }
-    let vid = vidSnapshot[0]
+    let vidRef = vidSnapshot.docs[0].ref
+    vid = vid[0]
     const authorQuery = firestore.collection("users").doc(vid.author)
     let authorSnapshot = await authorQuery.get()
 
@@ -37,6 +40,13 @@ export async function getServerSideProps(context) {
         .orderBy("createdAt", "desc")
         .limit(IN_LIMIT)
     const uploads = (await uploadsQuery.get()).docs.map(toJSON)
+
+    const commentsQuerry = vidRef
+        .collection("comments")
+        .orderBy("createdAt", "desc")
+        .limit(IN_LIMIT)
+
+    let comments = (await commentsQuerry.get()).docs.map(toJSON)
 
     return {
         props: {
@@ -49,6 +59,7 @@ export async function getServerSideProps(context) {
             views: vid.views,
             author_username: authorSnapshot.data().username,
             photoURL: authorSnapshot.data().photoURL,
+            comments: comments,
             exists: true,
         },
     }
@@ -64,6 +75,7 @@ export default function WatchPage({
     views,
     author_username,
     photoURL,
+    comments,
     exists,
 }) {
     const { user, username } = useContext(UserContext)
@@ -166,14 +178,6 @@ export default function WatchPage({
         }
     }
 
-    const getQuery = (cursor) => {
-        return firestore
-            .collectionGroup("uploads")
-            .orderBy("createdAt", "desc")
-            .startAfter(cursor)
-            .limit(LOAD_LIMIT)
-    }
-
     return (
         <div className={styles.root}>
             <div className={styles["search-container"]}>
@@ -238,11 +242,16 @@ export default function WatchPage({
                                 Views {views} • {createdAt}
                             </p>
                         </div>
+                        <CommentSection
+                            initialComments={comments}
+                            id={id}
+                            widthNum={width && width < 1400 ? "95" : "65"}
+                        />
                     </div>
                     <div className={styles["feed-container"]}>
                         <Feed
-                            initial_uploads={initial_uploads}
-                            width={width && width < 1400 ? "95" : "30"}
+                            initialUploads={initial_uploads}
+                            widthNum={width < 1400 ? "95" : "28"}
                             LOAD_LIMIT={LOAD_LIMIT}
                             IN_LIMIT={IN_LIMIT}
                         />

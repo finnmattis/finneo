@@ -50,16 +50,6 @@ export default function UsernamePage({
     id,
     initial_uploads,
 }) {
-    const getQuery = (cursor) => {
-        return firestore
-            .collection("users")
-            .doc(id)
-            .collection("uploads")
-            .orderBy("createdAt", "desc")
-            .startAfter(cursor)
-            .limit(LOAD_LIMIT)
-    }
-
     return (
         <main className={styles.root}>
             {exists ? (

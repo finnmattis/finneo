@@ -9,14 +9,13 @@ import styles from "../styles/Feed.module.css"
 function Video({
     width,
     id,
-    profile,
     author_id,
     title,
     thumbnailURL,
     views,
     createdAt,
 }) {
-    const vert = width <= 30
+    const vert = width <= 28
     const [author, setAuthor] = useState("User")
     const [authorPhotoURL, setAuthorPhotoURL] = useState(null)
 
@@ -83,18 +82,25 @@ function Video({
     )
 }
 
-export default function Feed({ initial_uploads, width, LOAD_LIMIT, IN_LIMIT }) {
-    //Idea of newUploads and oldUploads is to keep what the other one was to not have to make unnecessary calls to the database
-    const [newUploads, setNewUploads] = useState(initial_uploads)
+export default function Feed({
+    initialUploads,
+    widthNum,
+    LOAD_LIMIT,
+    IN_LIMIT,
+}) {
+    let width = `${widthNum}vw`
+
+    //newUploads and oldUploads is to keep both lists of uploads to not have to make unnecessary calls to the database
+    const [newUploads, setNewUploads] = useState(initialUploads)
     const [oldUploads, setOldUploads] = useState([])
-    const [uploads, setUploads] = useState(initial_uploads)
+    const [uploads, setUploads] = useState(initialUploads)
     const [filterIsNew, setFilterIsNew] = useState(true)
 
     const [newEnd, setNewEnd] = useState(false)
     const [oldEnd, setOldEnd] = useState(false)
 
     useEffect(() => {
-        if (initial_uploads.length === 0) {
+        if (initialUploads.length === 0) {
             setNewEnd(true)
             setOldEnd(true)
         }
@@ -168,7 +174,7 @@ export default function Feed({ initial_uploads, width, LOAD_LIMIT, IN_LIMIT }) {
     })
 
     return (
-        <div className={styles.root} style={{ width: `${width}vw` }}>
+        <div className={styles.root} style={{ width }}>
             <button
                 className={styles.filter}
                 onClick={onFilterChange}
@@ -191,7 +197,7 @@ export default function Feed({ initial_uploads, width, LOAD_LIMIT, IN_LIMIT }) {
                             key={upload.id}
                         >
                             <Video
-                                width={width}
+                                width={widthNum}
                                 id={upload.id}
                                 photoURL={upload.photoURL}
                                 author_id={upload.author}

@@ -31,7 +31,7 @@
 .info-container {
     width: 65vw;
     height: 25vh;
-    margin-left: 2.5vw;
+    margin: 2.5vw;
     border-radius: 15px;
     background-color: var(--primary);
 }

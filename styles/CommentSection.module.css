@@ -1,0 +1,58 @@
+.root {
+    min-height: 30vh;
+    margin: 2.5vw;
+    border-radius: 15px;
+    background-color: var(--primary);
+    padding-bottom: 2.5vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.comment-container {
+    margin: 2.5vw;
+    border-radius: 15px;
+    background-color: var(--bg);
+    display: grid;
+    grid-template-areas:
+        "Profile Username"
+        ". Comment"
+        ". Date";
+
+    grid-template-columns: 1fr 12fr;
+    align-items: center;
+}
+
+.profile {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-left: 20px;
+    margin-top: 10px;
+    border-radius: 50%;
+    /* Auto to stop weird css margin collapsing */
+    overflow: auto;
+    cursor: pointer;
+    grid-area: Profile;
+}
+
+.username-text {
+    margin: 0 0 0 20px;
+    color: white;
+    font-size: 30px;
+    grid-area: Username;
+}
+
+.comment-text {
+    margin: 0 0 0 20px;
+    color: var(--text-color);
+    font-size: 20px;
+    grid-area: Comment;
+}
+
+.date-text {
+    margin: 0 0 0 20px;
+    color: var(--text-color);
+    font-size: 15px;
+    grid-area: Date;
+}
