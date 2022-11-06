@@ -86,6 +86,11 @@ export default function upload() {
                 return
             })
         toast.success("Success!")
+
+        setVideo(null)
+        setThumbnail(null)
+        setTitle("")
+        setDesc("")
     }
 
     return (
@@ -109,12 +114,14 @@ export default function upload() {
                         />
                         <Input
                             name="Title"
+                            value={title}
                             func={(e) => {
                                 setTitle(e.target.value)
                             }}
                         />
                         <Input
                             name="Description"
+                            value={desc}
                             func={(e) => {
                                 setDesc(e.target.value)
                             }}

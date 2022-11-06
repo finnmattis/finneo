@@ -89,6 +89,7 @@ export default function Feed({
     IN_LIMIT,
 }) {
     let width = `${widthNum}vw`
+    console.log(width)
 
     //newUploads and oldUploads is to keep both lists of uploads to not have to make unnecessary calls to the database
     const [newUploads, setNewUploads] = useState(initialUploads)

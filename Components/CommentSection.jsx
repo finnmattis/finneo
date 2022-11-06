@@ -21,9 +21,7 @@ function Comment({ comment, createdAt, photoURL, username }) {
     )
 }
 
-export default function CommentSection({ initialComments, id, widthNum }) {
-    let width = `${widthNum}vw`
-
+export default function CommentSection({ initialComments, id }) {
     const [comment, setComment] = useState("")
     const [comments, setComments] = useState(initialComments)
     const [end, setEnd] = useState(false)
@@ -104,7 +102,7 @@ export default function CommentSection({ initialComments, id, widthNum }) {
     })
 
     return (
-        <div className={styles.root} style={{ width }}>
+        <div className={styles.root}>
             <Input
                 name="Write Comment"
                 value={comment}

@@ -19,7 +19,14 @@ function MyApp({ Component, pageProps }) {
             </Head>
             <Header />
             <Component {...pageProps} />
-            <Toaster />
+            <Toaster
+                toastOptions={{
+                    style: {
+                        backgroundColor: "rgb(30, 30, 40)",
+                        color: "rgb(140, 140, 160)",
+                    },
+                }}
+            />
         </UserContext.Provider>
     )
 }

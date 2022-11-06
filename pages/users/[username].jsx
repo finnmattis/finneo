@@ -37,8 +37,7 @@ export async function getServerSideProps(context) {
             exists: true,
             username,
             photoURL,
-            id,
-            initial_uploads: uploads,
+            initialUploads: uploads,
         },
     }
 }
@@ -47,8 +46,7 @@ export default function UsernamePage({
     exists,
     username,
     photoURL,
-    id,
-    initial_uploads,
+    initialUploads,
 }) {
     return (
         <main className={styles.root}>
@@ -59,8 +57,8 @@ export default function UsernamePage({
                         <Image src={photoURL} alt="profile" layout="fill" />
                     </div>
                     <Feed
-                        initial_uploads={initial_uploads}
-                        width="95"
+                        initialUploads={initialUploads}
+                        widthNum="95"
                         LOAD_LIMIT={LOAD_LIMIT}
                         IN_LIMIT={IN_LIMIT}
                     />

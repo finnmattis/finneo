@@ -1,4 +1,5 @@
 .root {
+    width: 65vw;
     min-height: 30vh;
     margin: 2.5vw;
     border-radius: 15px;
@@ -7,6 +8,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+@media screen and (max-width: 1400px) {
+    .root {
+        width: 95vw;
+    }
 }
 
 .comment-container {

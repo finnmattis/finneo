@@ -242,16 +242,12 @@ export default function WatchPage({
                                 Views {views} • {createdAt}
                             </p>
                         </div>
-                        <CommentSection
-                            initialComments={comments}
-                            id={id}
-                            widthNum={width && width < 1400 ? "95" : "65"}
-                        />
+                        <CommentSection initialComments={comments} id={id} />
                     </div>
                     <div className={styles["feed-container"]}>
                         <Feed
                             initialUploads={initial_uploads}
-                            widthNum={width < 1400 ? "95" : "28"}
+                            widthNum={width && width < 1400 ? "95" : "28"}
                             LOAD_LIMIT={LOAD_LIMIT}
                             IN_LIMIT={IN_LIMIT}
                         />

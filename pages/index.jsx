@@ -13,19 +13,19 @@ export async function getServerSideProps(context) {
     const uploads = (await uploadsQuery.get()).docs.map(toJSON)
 
     return {
-        props: { initial_uploads: uploads },
+        props: { initialUploads: uploads },
     }
 }
 
-export default function Home({ initial_uploads }) {
+export default function Home({ initialUploads }) {
     return (
         <main className={styles.root}>
             <Search />
             <div className={styles.filler}></div>
             <Feed
-                initial_uploads={initial_uploads}
-                width="95"
-                IN_LIMIT={8}
+                initialUploads={initialUploads}
+                widthNum="95"
+                IN_LIMIT={IN_LIMIT}
                 LOAD_LIMIT={4}
             />
             <div className={styles.filler}></div>
