@@ -1,9 +1,18 @@
+import {
+    collectionGroup,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    startAfter,
+    Timestamp,
+} from "firebase/firestore"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { firestore, fromMillis, toJSON } from "../lib/firebase"
+import { firestore, toJSON } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
 
 function Video({
@@ -16,20 +25,6 @@ function Video({
     createdAt,
 }) {
     const vert = width <= 28
-    const [author, setAuthor] = useState("User")
-    const [authorPhotoURL, setAuthorPhotoURL] = useState(null)
-
-    const getAuthorData = async () => {
-        const authorQuery = firestore.collection("users").doc(author_id)
-        let data = (await authorQuery.get()).data()
-        setAuthor(data.username)
-        setAuthorPhotoURL(data.photoURL)
-    }
-
-    useEffect(() => {
-        getAuthorData()
-    }, [])
-
     return (
         <Link href={`/watch/${id}`}>
             <div
@@ -48,7 +43,7 @@ function Video({
                         style={{ display: vert ? "none" : "inline-block" }}
                     >
                         <Image
-                            src={authorPhotoURL || "/user.png"}
+                            src="/user.png"
                             alt="profile"
                             layout="fill"
                         ></Image>
@@ -66,7 +61,7 @@ function Video({
                                 vert ? styles["misc-text-vert"] : ""
                             }`}
                         >
-                            {author}
+                            User
                         </h3>
                         <h1
                             className={`${styles["misc-text"]} ${
@@ -89,9 +84,8 @@ export default function Feed({
     IN_LIMIT,
 }) {
     let width = `${widthNum}vw`
-    console.log(width)
 
-    //newUploads and oldUploads is to keep both lists of uploads to not have to make unnecessary calls to the database
+    //newUploads and oldUploads keep both lists of uploads to not have to make unnecessary calls to the database
     const [newUploads, setNewUploads] = useState(initialUploads)
     const [oldUploads, setOldUploads] = useState([])
     const [uploads, setUploads] = useState(initialUploads)
@@ -111,13 +105,21 @@ export default function Feed({
         if (filterIsNew) {
             //Load old uploads on first time
             if (oldUploads.length === 0) {
-                const uploadsQuery = firestore
-                    .collectionGroup("uploads")
-                    .orderBy("createdAt")
-                    .limit(IN_LIMIT)
-                const uploads = (await uploadsQuery.get()).docs.map(toJSON)
-                setOldUploads(uploads)
-                setUploads(uploads)
+                // const uploadsQuery = firestore
+                //     .collectionGroup("uploads")
+                //     .orderBy("createdAt")
+                //     .limit(IN_LIMIT)
+                // const uploads = (await uploadsQuery.get()).docs.map(toJSON)
+                const oldUploadsQuery = query(
+                    collectionGroup(firestore, "uploads"),
+                    orderBy("createdAt"),
+                    limit(IN_LIMIT)
+                )
+                const oldUploads = (await getDocs(oldUploadsQuery)).docs.map(
+                    toJSON
+                )
+                setOldUploads(oldUploads)
+                setUploads(oldUploads)
             } else {
                 setUploads(oldUploads)
             }
@@ -131,15 +133,17 @@ export default function Feed({
         const last = uploads[uploads.length - 1]
         const cursor =
             typeof last.createdAt === "number"
-                ? fromMillis(last.createdAt)
+                ? Timestamp.fromMillis(last.createdAt)
                 : last.createdAt
-        const uploadsQuerry = firestore
-            .collectionGroup("uploads")
-            .orderBy("createdAt", filterIsNew ? "desc" : "asc")
-            .startAfter(cursor)
-            .limit(LOAD_LIMIT)
 
-        const new_uploads = await uploadsQuerry.get().catch(() => {
+        const uploadsQuery = query(
+            collectionGroup(firestore, "uploads"),
+            orderBy("createdAt", filterIsNew ? "desc" : "asc"),
+            startAfter(cursor),
+            limit(IN_LIMIT)
+        )
+
+        const new_uploads = await getDocs(uploadsQuery).catch(() => {
             toast.error("Failed to load more videos")
             return
         })

@@ -1,10 +1,12 @@
+import { collection, doc, serverTimestamp, setDoc } from "firebase/firestore"
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
 import { useContext, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import Button from "../Components/Button"
 import Input from "../Components/Input"
 import UploadFile from "../Components/UploadFile"
 import { UserContext } from "../lib/context"
-import { firestore, serverTimestamp, storage } from "../lib/firebase"
+import { firestore, storage } from "../lib/firebase"
 import styles from "../styles/upload.module.css"
 
 export default function upload() {
@@ -29,63 +31,47 @@ export default function upload() {
             return
         }
 
-        //Create Task to Upload Video to Firebase Storage
+        //Upload Video to Firebase Storage
         const vid = Array.from(video)[0]
         const vidExtension = vid.type.split("/")[1]
 
-        const vidRef = storage.ref(
+        const vidRef = ref(
+            storage,
             `uploads/${user.uid}/${Date.now()}.${vidExtension}`
         )
 
-        const vidTask = vidRef.put(vid)
+        const vidTask = await uploadBytes(vidRef, vid)
 
-        //Create Task to Upload Thumbnail to Firebase Storage
+        //Upload Thumbnail to Firebase Storage
         const thumb = Array.from(thumbnail)[0]
         const thumbExtension = thumb.type.split("/")[1]
 
-        const thumbRef = storage.ref(
+        const thumbRef = ref(
+            storage,
             `uploads/${user.uid}/${Date.now()}.${thumbExtension}`
         )
 
-        const thumbTask = thumbRef.put(thumb)
+        const thumbTask = await uploadBytes(thumbRef, thumb)
 
-        //Upload to storage and get the download URL
-        //Note: this is not a native Promise
-        let vidURL = await vidTask
-            .then((d) => vidRef.getDownloadURL())
-            .catch(() => {
-                toast.error("Error uploading video")
-                return
-            })
-        let thumbURL = await thumbTask
-            .then((d) => thumbRef.getDownloadURL())
-            .catch(() => {
-                toast.error("Error uploading thumbnail")
-                return
-            })
+        let vidURL = await getDownloadURL(vidTask.ref)
+        let thumbURL = await getDownloadURL(thumbTask.ref)
 
         //Upload to Firestore
-        let doc = firestore
-            .collection("users")
-            .doc(user.uid)
-            .collection("uploads")
-            .doc()
-        await doc
-            .set({
-                author: user.uid,
-                createdAt: serverTimestamp(),
-                description: desc,
-                id: doc.id,
-                thumbnailURL: thumbURL,
-                title: title,
-                videoURL: vidURL,
-                views: 0,
-            })
-            .catch(() => {
-                toast.error("Failed to write to database")
-                return
-            })
-        toast.success("Success!")
+        let uploadRef = doc(collection(firestore, "users", user.uid, "uploads"))
+        await setDoc(uploadRef, {
+            author: user.uid,
+            createdAt: serverTimestamp(),
+            description: desc,
+            id: uploadRef.id,
+            thumbnailURL: thumbURL,
+            title: title,
+            videoURL: vidURL,
+            views: 0,
+        }).catch(() => {
+            toast.error("Failed to write to database")
+            return
+        })
+        toast.success("Uploaded!")
 
         setVideo(null)
         setThumbnail(null)

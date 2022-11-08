@@ -1,3 +1,10 @@
+import {
+    collectionGroup,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+} from "firebase/firestore"
 import Feed from "../Components/Feed"
 import Search from "../Components/Search"
 import { firestore, toJSON } from "../lib/firebase"
@@ -6,11 +13,13 @@ import styles from "../styles/index.module.css"
 const IN_LIMIT = 8
 
 export async function getServerSideProps(context) {
-    const uploadsQuery = firestore
-        .collectionGroup("uploads")
-        .orderBy("createdAt", "desc")
-        .limit(IN_LIMIT)
-    const uploads = (await uploadsQuery.get()).docs.map(toJSON)
+    const uploadsQuery = query(
+        collectionGroup(firestore, "uploads"),
+        orderBy("createdAt", "desc"),
+        limit(IN_LIMIT)
+    )
+
+    const uploads = (await getDocs(uploadsQuery)).docs.map(toJSON)
 
     return {
         props: { initialUploads: uploads },

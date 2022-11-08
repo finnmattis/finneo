@@ -1,3 +1,10 @@
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+} from "firebase/auth"
+import { doc, getDoc, writeBatch } from "firebase/firestore"
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
 import debounce from "lodash.debounce"
 import Image from "next/image"
 import { useCallback, useContext, useEffect, useState } from "react"
@@ -7,13 +14,12 @@ import Checkmark from "../Components/Checkmark"
 import Input from "../Components/Input"
 import UploadFile from "../Components/UploadFile"
 import { UserContext } from "../lib/context"
-import { auth, firestore, googleAuthProvider, storage } from "../lib/firebase"
+import { auth, firestore, googleAuth, storage } from "../lib/firebase"
 import styles from "../styles/Enter.module.css"
 
 function GoogleAuth() {
     const signInGoogle = () => {
-        const provider = googleAuthProvider
-        auth.signInWithPopup(provider)
+        signInWithPopup(auth, googleAuth)
             .catch((error) => {
                 const errorCode = error.code
                 if (
@@ -21,6 +27,8 @@ function GoogleAuth() {
                     errorCode === "auth/cancelled-popup-request"
                 ) {
                     toast.error("Popup Closed")
+                } else {
+                    toast.error("Failed to sign in")
                 }
             })
             .then(() => {
@@ -56,7 +64,7 @@ function SignIn({ func }) {
     const [passwordShown, setPasswordShown] = useState(false)
 
     const signInEmail = () => {
-        auth.signInWithEmailAndPassword(email, password)
+        signInWithEmailAndPassword(auth, email, password)
             .then(() => {
                 toast.success("Signed in!")
             })
@@ -112,7 +120,7 @@ function SignUp({ func }) {
     const signUp = async (e) => {
         e.preventDefault()
 
-        auth.createUserWithEmailAndPassword(email, password)
+        createUserWithEmailAndPassword(auth, email, password)
             .then(() => {
                 toast.success("Signed up!")
             })
@@ -167,8 +175,9 @@ function ChooseUsername({ func }) {
     const checkUsername = useCallback(
         debounce(async (username) => {
             if (username.length >= 3) {
-                const ref = firestore.doc(`usernames/${username}`)
-                const { exists } = await ref.get()
+                const usernameRef = doc(firestore, "usernames", username)
+                const usernameSnap = await getDoc(usernameRef)
+                const exists = usernameSnap.exists()
                 setIsValid(!exists)
             }
         }, 500),
@@ -231,9 +240,9 @@ function ChoosePicture({ func, username }) {
 
     const checkExistingPic = async () => {
         if (user.photoURL) {
-            const userDoc = firestore.doc(`users/${user.uid}`)
-            const usernameDoc = firestore.doc(`usernames/${username}`)
-            const batch = firestore.batch()
+            const userDoc = doc(firestore, "users", user.uid)
+            const usernameDoc = doc(firestore, "usernames", username)
+            const batch = writeBatch(firestore)
             batch.set(userDoc, {
                 username,
                 photoURL: user.photoURL,
@@ -242,6 +251,7 @@ function ChoosePicture({ func, username }) {
 
             await batch.commit().catch(() => {
                 toast.error("Failed to set username")
+                return
             })
             func(true)
         }
@@ -256,25 +266,25 @@ function ChoosePicture({ func, username }) {
         const file = Array.from(profilePic)[0]
         const extension = file.type.split("/")[1]
 
-        const ref = storage.ref(`profiles/${auth.currentUser.uid}.${extension}`)
-        const task = ref.put(file)
+        const vidRef = ref(
+            storage,
+            `profiles/${auth.currentUser.uid}.${extension}`
+        )
+        const vidTask = await uploadBytes(vidRef, file)
+        let url = await getDownloadURL(vidTask.ref)
 
-        // Get downloadURL AFTER task resolves (Note: this is not a native Promise)
-        let url = await task.then((d) => ref.getDownloadURL())
+        const batch = writeBatch(firestore)
+        const userDoc = doc(firestore, `users/${user.uid}`)
+        const usernameDoc = doc(firestore, `usernames/${username}`)
 
-        // Write to db
-        const userDoc = firestore.doc(`users/${user.uid}`)
-        const usernameDoc = firestore.doc(`usernames/${username}`)
-
-        const batch = firestore.batch()
         batch.set(userDoc, {
             username,
             photoURL: url,
         })
         batch.set(usernameDoc, { uid: user.uid })
 
-        await batch.commit().catch((error) => {
-            toast.error("Failed to set username")
+        await batch.commit().catch(() => {
+            toast.error("Failed to create account")
             return
         })
 

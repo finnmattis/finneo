@@ -1,8 +1,22 @@
+import {
+    collection,
+    collectionGroup,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    setDoc,
+    updateDoc,
+    where,
+} from "firebase/firestore"
 import debounce from "lodash.debounce"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import CommentSection from "../../Components/CommentSection"
 import Feed from "../../Components/Feed"
@@ -18,119 +32,126 @@ const LOAD_LIMIT = 4
 export async function getServerSideProps(context) {
     const { id } = context.params
 
-    const videoQuery = firestore
-        .collectionGroup("uploads")
-        .where("id", "==", id)
-    let vidSnapshot = await videoQuery.get()
-    let vid = vidSnapshot.docs.map(toJSON)
-    if (vid.empty) {
+    let videoQuery = query(
+        collectionGroup(firestore, "uploads"),
+        where("id", "==", id)
+    )
+
+    let vidSnapshot = await getDocs(videoQuery)
+    let vid = vidSnapshot.docs.map(toJSON)[0]
+    if (!vid) {
         return {
             props: {
-                empty: true,
+                exists: false,
             },
         }
     }
+
+    const authorQuery = doc(firestore, "users", vid.author)
+    let authorSnapshot = await getDoc(authorQuery)
+
+    const uploadsQuery = query(
+        collectionGroup(firestore, "uploads"),
+        orderBy("createdAt", "desc"),
+        limit(IN_LIMIT)
+    )
+    const uploads = (await getDocs(uploadsQuery)).docs.map(toJSON)
+
     let vidRef = vidSnapshot.docs[0].ref
-    vid = vid[0]
-    const authorQuery = firestore.collection("users").doc(vid.author)
-    let authorSnapshot = await authorQuery.get()
-
-    const uploadsQuery = firestore
-        .collectionGroup("uploads")
-        .orderBy("createdAt", "desc")
-        .limit(IN_LIMIT)
-    const uploads = (await uploadsQuery.get()).docs.map(toJSON)
-
-    const commentsQuerry = vidRef
-        .collection("comments")
-        .orderBy("createdAt", "desc")
-        .limit(IN_LIMIT)
-
-    let comments = (await commentsQuerry.get()).docs.map(toJSON)
+    let commentQuery = query(
+        collection(vidRef, "comments"),
+        orderBy("createdAt", "desc"),
+        limit(IN_LIMIT)
+    )
+    let comments = (await getDocs(commentQuery)).docs.map(toJSON)
 
     return {
         props: {
-            initial_uploads: uploads,
-            id: id,
+            exists: true,
+            id,
             url: vid.videoURL,
             title: vid.title,
+            author_username: authorSnapshot.data().username,
+            photoURL: authorSnapshot.data().photoURL,
             desc: vid.description,
             createdAt: moment(vid.createdAt).fromNow(),
             views: vid.views,
-            author_username: authorSnapshot.data().username,
-            photoURL: authorSnapshot.data().photoURL,
-            comments: comments,
-            exists: true,
+            initialUploads: uploads,
+            initialComments: comments,
         },
     }
 }
 
 export default function WatchPage({
-    initial_uploads,
+    exists,
     id,
     url,
     title,
+    author_username,
+    photoURL,
     desc,
     createdAt,
     views,
-    author_username,
-    photoURL,
-    comments,
-    exists,
+    initialUploads,
+    initialComments,
 }) {
+    //Need to fetch client side because firebase objects are not serializable
+    const vidRef = useRef()
+    let { width } = useWindowDimensions()
+
     const { user, username } = useContext(UserContext)
-    const vidQuery = firestore.collectionGroup("uploads").where("id", "==", id)
     const [like, setLike] = useState(false)
     const [dislike, setDislike] = useState(false)
-    let { width } = useWindowDimensions()
 
     const getLikes = async () => {
         const unsub = auth.onAuthStateChanged(async (cur_user) => {
             unsub()
             if (cur_user) {
-                let likes = (await vidQuery.get()).docs[0].ref
-                    .collection("likes")
-                    .doc(cur_user.uid)
-                likes = await likes.get()
-                if (likes.exists) {
+                let likes = doc(vidRef.current, "likes", cur_user.uid)
+                likes = await getDoc(likes)
+                if (likes.exists()) {
                     setLike(true)
                 }
-                let dislikes = (await vidQuery.get()).docs[0].ref
-                    .collection("dislikes")
-                    .doc(cur_user.uid)
-                dislikes = await dislikes.get()
-                if (dislikes.exists) {
+                let dislikes = doc(vidRef.current, "dislikes", cur_user.uid)
+                dislikes = await getDoc(dislikes)
+                if (dislikes.exists()) {
                     setDislike(true)
                 }
             }
         })
     }
 
-    const increment_views = async () => {
-        const video = (await vidQuery.get()).docs[0]
-        const views = video.data().views + 1
-        video.ref.update({ views })
+    const setVidQuery = async () => {
+        const vidQuery = query(
+            collectionGroup(firestore, "uploads"),
+            where("id", "==", id)
+        )
+        vidRef.current = (await getDocs(vidQuery)).docs[0].ref
     }
 
     useEffect(() => {
-        increment_views()
-        getLikes()
+        const setup = async () => {
+            await setVidQuery()
+            updateDoc(vidRef.current, {
+                views: views + 1,
+            })
+            getLikes()
+        }
+        setup()
     }, [])
 
     const onLikeHelper = debounce(async () => {
-        const vid = (await vidQuery.get()).docs[0].ref
-
-        let likes = vid.collection("likes").doc(user.uid)
-        if (!like) {
+        const likes = doc(vidRef.current, "likes", user.uid)
+        if (like) {
+            await deleteDoc(likes)
+        } else {
             if (dislike) {
-                let dislikes = vid.collection("dislikes").doc(user.uid)
-                dislikes.delete()
+                const dislikes = doc(vidRef.current, "dislikes", user.uid)
+                await deleteDoc(dislikes)
             }
-            likes.set({
+            await setDoc(likes, {
                 uid: user.uid,
             })
-        } else {
-            likes.delete()
         }
     }, 500)
 
@@ -149,18 +170,17 @@ export default function WatchPage({
     }
 
     const onDislikeHelper = debounce(async () => {
-        const vid = (await vidQuery.get()).docs[0].ref
-        let dislikes = vid.collection("dislikes").doc(user.uid)
-        if (!dislike) {
+        const dislikes = doc(vidRef.current, "dislikes", user.uid)
+        if (dislike) {
+            await deleteDoc(dislikes)
+        } else {
             if (like) {
-                let likes = vid.collection("likes").doc(user.uid)
-                likes.delete()
+                const likes = doc(vidRef.current, "likes", user.uid)
+                await deleteDoc(likes)
             }
-            dislikes.set({
+            await setDoc(dislikes, {
                 uid: user.uid,
             })
-        } else {
-            dislikes.delete()
         }
     }, 500)
 
@@ -242,11 +262,14 @@ export default function WatchPage({
                                 Views {views} • {createdAt}
                             </p>
                         </div>
-                        <CommentSection initialComments={comments} id={id} />
+                        <CommentSection
+                            initialComments={initialComments}
+                            vidRef={vidRef.current}
+                        />
                     </div>
                     <div className={styles["feed-container"]}>
                         <Feed
-                            initialUploads={initial_uploads}
+                            initialUploads={initialUploads}
                             widthNum={width && width < 1400 ? "95" : "28"}
                             LOAD_LIMIT={LOAD_LIMIT}
                             IN_LIMIT={IN_LIMIT}
