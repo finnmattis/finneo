@@ -26,8 +26,12 @@ export default function upload() {
     }, [video, thumbnail, title, desc])
 
     const uploadFile = async () => {
-        if (!video || !thumbnail || !title || !desc) {
-            toast.error("Please fill all the fields")
+        if (title.length < 3 || title.length > 50) {
+            toast.error("Title must be between 3 and 50 characters")
+            return
+        }
+        if (desc.length < 3 || desc.length > 100) {
+            toast.error("Description must be between 3 and 100 characters")
             return
         }
 
@@ -40,7 +44,7 @@ export default function upload() {
             `uploads/${user.uid}/${Date.now()}.${vidExtension}`
         )
 
-        const vidTask = await uploadBytes(vidRef, vid)
+        const vidTask = uploadBytes(vidRef, vid)
 
         //Upload Thumbnail to Firebase Storage
         const thumb = Array.from(thumbnail)[0]
@@ -51,10 +55,15 @@ export default function upload() {
             `uploads/${user.uid}/${Date.now()}.${thumbExtension}`
         )
 
-        const thumbTask = await uploadBytes(thumbRef, thumb)
+        const thumbTask = uploadBytes(thumbRef, thumb)
 
-        let vidURL = await getDownloadURL(vidTask.ref)
-        let thumbURL = await getDownloadURL(thumbTask.ref)
+        vidTask = await vidTask
+        thumbTask = await thumbTask
+
+        let vidURL = getDownloadURL(vidTask.ref)
+        let thumbURL = getDownloadURL(thumbTask.ref)
+        vidURL = await vidURL
+        thumbURL = await thumbURL
 
         //Upload to Firestore
         let uploadRef = doc(collection(firestore, "users", user.uid, "uploads"))

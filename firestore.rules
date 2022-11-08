@@ -39,9 +39,9 @@ service cloud.firestore {
         allow update: if validViewUpdate()
       }
       
-      match /users/{userID}/uploads/{uploadID}/comment/{commentID} {
+      match /users/{userID}/uploads/{uploadID}/comments/{commentID} {
         allow read;
-      	allow write;
+        allow write: if canComment();
       }
       
     }
@@ -50,26 +50,26 @@ service cloud.firestore {
       let isOwner = request.auth.uid == userID;
       let username = request.resource.data.username;
       let createdValidUsername = existsAfter(/databases/$(database)/documents/usernames/$(username));
-      let valid_fields = hasAll(["username", "photoURL"]);
-      let valid_types = request.resource.data.username is string && request.resource.data.photoURL is string;
+      let validField = hasAll(["username", "photoURL"]);
+      let validTypes = request.resource.data.username is string && request.resource.data.photoURL is string;
 
-      return isOwner && createdValidUsername && valid_fields && valid_types;
+      return isOwner && createdValidUsername && validField && validTypes;
     }
 
     function isValidUsername(username) {
 			let isOwner = request.auth.uid == request.resource.data.uid;
       let isValidLength = username.size() >= 3 && username.size() <= 15;
       let isValidUserDoc = getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.username == username;
-      let valid_type = request.resource.data.uid is string;
+      let validType = request.resource.data.uid is string;
       
-      return isOwner && isValidLength && isValidUserDoc && valid_type && hasAll(["uid"]);
+      return isOwner && isValidLength && isValidUserDoc && validType && hasAll(["uid"]);
     }
 
     function canUpload(userID){
       let isOwner = request.auth.uid == userID;
       let isAuthor = request.resource.data.author == userID;
-      let valid_fields = hasAll(["author", "createdAt", "description", "id", "thumbnailURL", "title", "videoURL", "views"]);
-      let valid_types = request.resource.data.author is string
+      let validField = hasAll(["author", "createdAt", "description", "id", "thumbnailURL", "title", "videoURL", "views"]);
+      let validTypes = request.resource.data.author is string
       && request.resource.data.createdAt is timestamp
       && request.resource.data.description is string
       && request.resource.data.id is string
@@ -77,34 +77,47 @@ service cloud.firestore {
       && request.resource.data.title is string
       && request.resource.data.videoURL is string
       && request.resource.data.views is number;
-      return isOwner && isAuthor && valid_fields && valid_types
+      let isValidTitleLength = request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 50;
+      let isValidDescriptionLength = request.resource.data.description.size() >= 3 && request.resource.data.description.size() <= 100;
+      return isOwner && isAuthor && validField && validTypes && isValidTitleLength && isValidDescriptionLength;
+    }
+
+    function validViewUpdate() {
+      let validField = onlyEditFields(['views']);
+      let validType = request.resource.data.views is number;
+      let correctInc = request.resource.data.views == resource.data.views + 1;
+      return validField && validType && correctInc
     }
 
     function canLike(userID, uploadID) {
       let isNotOwner = request.auth.uid != userID;
       let hasNotDisliked = !existsAfter(/databases/$(database)/documents/users/$(userID)/uploads/$(uploadID)/dislikes/$(request.auth.uid));
-      let valid_fields = hasAll(["uid"]);
-      let valid_id = request.auth.uid == request.resource.data.uid;
-      let valid_type = request.resource.data.uid is string;
+      let validField = hasAll(["uid"]);
+      let validId = request.auth.uid == request.resource.data.uid;
+      let validType = request.resource.data.uid is string;
 
-      return isNotOwner && hasNotDisliked && valid_fields && valid_id && valid_type;
+      return isNotOwner && hasNotDisliked && validField && validId && validType;
     }
     
     function canDislike(userID, uploadID) {
       let isNotOwner = request.auth.uid != userID;
       let hasNotLiked = !existsAfter(/databases/$(database)/documents/users/$(userID)/uploads/$(uploadID)/likes/$(request.auth.uid));
-      let valid_fields = hasAll(["uid"]);
-      let valid_id = request.auth.uid == request.resource.data.uid;
-      let valid_type = request.resource.data.uid is string;
+      let validField = hasAll(["uid"]);
+      let validId = request.auth.uid == request.resource.data.uid;
+      let validType = request.resource.data.uid is string;
 
-      return isNotOwner && hasNotLiked && valid_fields && valid_id && valid_type;
+      return isNotOwner && hasNotLiked && validField && validId && validType;
     }
 
-    function validViewUpdate() {
-      let valid_fields = onlyEditFields(['views']);
-      let valid_type = request.resource.data.views is number;
-      let correct_inc = request.resource.data.views == resource.data.views + 1;
-      return valid_fields && valid_type && correct_inc
+    function canComment() {
+      let validFields = hasAll(["comment", "createdAt", "username", "photoURL"]);
+      let validTypes = request.resource.data.comment is string && 
+      request.resource.data.createdAt is timestamp &&
+      request.resource.data.username is string &&
+      request.resource.data.photoURL is string;
+      let validUsername = getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.username == request.resource.data.username;
+      let validLength = request.resource.data.comment.size() >= 3 && request.resource.data.comment.size() <= 100;
+      return validFields && validTypes && validUsername && validLength;
     }
 
     function hasAll(fields) {

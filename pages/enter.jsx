@@ -174,7 +174,7 @@ function ChooseUsername({ func }) {
 
     const checkUsername = useCallback(
         debounce(async (username) => {
-            if (username.length >= 3) {
+            if (username.length >= 3 && username.length <= 15) {
                 const usernameRef = doc(firestore, "usernames", username)
                 const usernameSnap = await getDoc(usernameRef)
                 const exists = usernameSnap.exists()
@@ -188,7 +188,7 @@ function ChooseUsername({ func }) {
         const val = e.target.value.toLowerCase()
         const re = /^(?=[a-zA-Z0-9._]{3,15}$)(?!.*[_.]{2})[^_.].*[^_.]$/
 
-        if (val.length < 3) {
+        if (val.length < 3 || val.length > 15) {
             SetUsername(val)
             setIsValid(false)
         }

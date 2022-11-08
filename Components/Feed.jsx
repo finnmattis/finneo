@@ -1,30 +1,17 @@
-import {
-    collectionGroup,
-    getDocs,
-    limit,
-    orderBy,
-    query,
-    startAfter,
-    Timestamp,
-} from "firebase/firestore"
+import { getDocs, Timestamp } from "firebase/firestore"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { firestore, toJSON } from "../lib/firebase"
+import { toJSON } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
 
-function Video({
-    width,
-    id,
-    author_id,
-    title,
-    thumbnailURL,
-    views,
-    createdAt,
-}) {
-    const vert = width <= 28
+function Video({ width, id, title, thumbnailURL, views, createdAt }) {
+    const vert = useRef()
+    useEffect(() => {
+        vert.current = width <= 28
+    }, [width])
     return (
         <Link href={`/watch/${id}`}>
             <div
@@ -83,7 +70,10 @@ export default function Feed({
     queryFunc,
     inQueryFunc,
 }) {
-    let width = `${widthNum}vw`
+    let width = useRef()
+    useEffect(() => {
+        width.current = `${widthNum}vw`
+    }, [widthNum])
 
     //newUploads and oldUploads keep both lists of uploads to not have to make unnecessary calls to the database
     const [newUploads, setNewUploads] = useState(initialUploads)

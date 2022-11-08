@@ -32,12 +32,10 @@ const LOAD_LIMIT = 4
 
 export async function getServerSideProps(context) {
     const { id } = context.params
-
     let videoQuery = query(
         collectionGroup(firestore, "uploads"),
         where("id", "==", id)
     )
-
     let vidSnapshot = await getDocs(videoQuery)
     let vid = vidSnapshot.docs.map(toJSON)[0]
     if (!vid) {
@@ -47,17 +45,14 @@ export async function getServerSideProps(context) {
             },
         }
     }
-
     const authorQuery = doc(firestore, "users", vid.author)
     let authorSnapshot = await getDoc(authorQuery)
-
     const uploadsQuery = query(
         collectionGroup(firestore, "uploads"),
         orderBy("createdAt", "desc"),
         limit(IN_LIMIT)
     )
     const uploads = (await getDocs(uploadsQuery)).docs.map(toJSON)
-
     let vidRef = vidSnapshot.docs[0].ref
     let commentQuery = query(
         collection(vidRef, "comments"),
@@ -65,7 +60,6 @@ export async function getServerSideProps(context) {
         limit(IN_LIMIT)
     )
     let comments = (await getDocs(commentQuery)).docs.map(toJSON)
-
     return {
         props: {
             exists: true,

@@ -13,6 +13,7 @@ import moment from "moment"
 import Image from "next/image"
 import { useRouter } from "next/router"
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
+import toast from "react-hot-toast"
 import Button from "../Components/Button"
 import Input from "../Components/Input"
 import { UserContext } from "../lib/context"
@@ -48,6 +49,10 @@ export default function CommentSection({ initialComments, vidRef }) {
     }, [dynamicRoute])
 
     const postComment = async () => {
+        if (comment.length < 3 || comment.length > 100) {
+            toast.error("Comment must be between 3 and 100 characters")
+            return
+        }
         const commentRef = collection(vidRef, "comments")
         addDoc(commentRef, {
             comment,
