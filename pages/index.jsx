@@ -4,6 +4,7 @@ import {
     limit,
     orderBy,
     query,
+    startAfter,
 } from "firebase/firestore"
 import Feed from "../Components/Feed"
 import Search from "../Components/Search"
@@ -27,6 +28,23 @@ export async function getServerSideProps(context) {
 }
 
 export default function Home({ initialUploads }) {
+    const getFeedQuery = (cursor, asc) => {
+        return query(
+            collectionGroup(firestore, "uploads"),
+            orderBy("createdAt", asc ? "asc" : "desc"),
+            startAfter(cursor),
+            limit(IN_LIMIT)
+        )
+    }
+
+    const getInFeedQuery = () => {
+        return query(
+            collectionGroup(firestore, "uploads"),
+            orderBy("createdAt"),
+            limit(IN_LIMIT)
+        )
+    }
+
     return (
         <main className={styles.root}>
             <Search />
@@ -34,8 +52,8 @@ export default function Home({ initialUploads }) {
             <Feed
                 initialUploads={initialUploads}
                 widthNum="95"
-                IN_LIMIT={IN_LIMIT}
-                LOAD_LIMIT={4}
+                queryFunc={getFeedQuery}
+                inQueryFunc={getInFeedQuery}
             />
             <div className={styles.filler}></div>
         </main>

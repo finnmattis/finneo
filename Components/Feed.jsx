@@ -80,8 +80,8 @@ function Video({
 export default function Feed({
     initialUploads,
     widthNum,
-    LOAD_LIMIT,
-    IN_LIMIT,
+    queryFunc,
+    inQueryFunc,
 }) {
     let width = `${widthNum}vw`
 
@@ -105,16 +105,7 @@ export default function Feed({
         if (filterIsNew) {
             //Load old uploads on first time
             if (oldUploads.length === 0) {
-                // const uploadsQuery = firestore
-                //     .collectionGroup("uploads")
-                //     .orderBy("createdAt")
-                //     .limit(IN_LIMIT)
-                // const uploads = (await uploadsQuery.get()).docs.map(toJSON)
-                const oldUploadsQuery = query(
-                    collectionGroup(firestore, "uploads"),
-                    orderBy("createdAt"),
-                    limit(IN_LIMIT)
-                )
+                const oldUploadsQuery = inQueryFunc()
                 const oldUploads = (await getDocs(oldUploadsQuery)).docs.map(
                     toJSON
                 )
@@ -136,12 +127,7 @@ export default function Feed({
                 ? Timestamp.fromMillis(last.createdAt)
                 : last.createdAt
 
-        const uploadsQuery = query(
-            collectionGroup(firestore, "uploads"),
-            orderBy("createdAt", filterIsNew ? "desc" : "asc"),
-            startAfter(cursor),
-            limit(IN_LIMIT)
-        )
+        const uploadsQuery = queryFunc(cursor, !filterIsNew)
 
         const new_uploads = await getDocs(uploadsQuery).catch(() => {
             toast.error("Failed to load more videos")

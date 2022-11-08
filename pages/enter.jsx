@@ -297,6 +297,7 @@ function ChoosePicture({ func, username }) {
             <span className={styles.title}>Choose Picture</span>
             <UploadFile
                 name="Profile Picture"
+                accept="image/*"
                 func={(e) => {
                     setProfilePic(e.target.files)
                 }}

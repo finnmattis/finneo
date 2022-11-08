@@ -1,3 +1,13 @@
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    startAfter,
+} from "firebase/firestore"
 import Image from "next/image"
 import Feed from "../../Components/Feed"
 import { firestore, toJSON } from "../../lib/firebase"
@@ -9,9 +19,9 @@ const LOAD_LIMIT = 4
 export async function getServerSideProps(context) {
     const { username } = context.params
 
-    const idQuery = firestore.collection("usernames").doc(username)
-    let id = await idQuery.get()
-    if (id.exists) {
+    const idQuery = doc(firestore, "usernames", username)
+    let id = await getDoc(idQuery)
+    if (id.exists()) {
         id = id.data().uid
     } else {
         return {
@@ -21,21 +31,22 @@ export async function getServerSideProps(context) {
         }
     }
 
-    const ProfileQuery = firestore.collection("users").doc(id)
-    const photoURL = (await ProfileQuery.get()).data().photoURL
+    const profileQuery = doc(firestore, "users", id)
+    const photoURL = (await getDoc(profileQuery)).data().photoURL
 
-    const uploadsQuery = firestore
-        .collection("users")
-        .doc(id)
-        .collection("uploads")
-        .orderBy("createdAt", "desc")
-        .limit(IN_LIMIT)
+    const uploadsQuery = query(
+        collection(firestore, "users", id, "uploads"),
+        orderBy("createdAt", "desc"),
+        limit(IN_LIMIT)
+    )
 
-    const uploads = (await uploadsQuery.get()).docs.map(toJSON)
+    const uploads = (await getDocs(uploadsQuery)).docs.map(toJSON)
+
     return {
         props: {
             exists: true,
             username,
+            id,
             photoURL,
             initialUploads: uploads,
         },
@@ -45,9 +56,27 @@ export async function getServerSideProps(context) {
 export default function UsernamePage({
     exists,
     username,
+    id,
     photoURL,
     initialUploads,
 }) {
+    const getFeedQuery = (cursor, asc) => {
+        return query(
+            collection(firestore, "users", id, "uploads"),
+            orderBy("createdAt", asc ? "asc" : "desc"),
+            startAfter(cursor),
+            limit(IN_LIMIT)
+        )
+    }
+
+    const getInFeedQuerry = () => {
+        return query(
+            collection(firestore, "users", id, "uploads"),
+            orderBy("createdAt", "desc"),
+            limit(IN_LIMIT)
+        )
+    }
+
     return (
         <main className={styles.root}>
             {exists ? (
@@ -59,8 +88,8 @@ export default function UsernamePage({
                     <Feed
                         initialUploads={initialUploads}
                         widthNum="95"
-                        LOAD_LIMIT={LOAD_LIMIT}
-                        IN_LIMIT={IN_LIMIT}
+                        queryFunc={getFeedQuery}
+                        inQueryFunc={getInFeedQuerry}
                     />
                     <div className={styles.filler}></div>
                 </>

@@ -9,6 +9,7 @@ import {
     orderBy,
     query,
     setDoc,
+    startAfter,
     updateDoc,
     where,
 } from "firebase/firestore"
@@ -102,6 +103,23 @@ export default function WatchPage({
     const { user, username } = useContext(UserContext)
     const [like, setLike] = useState(false)
     const [dislike, setDislike] = useState(false)
+
+    const getFeedQuery = (cursor, asc) => {
+        return query(
+            collectionGroup(firestore, "uploads"),
+            orderBy("createdAt", asc ? "asc" : "desc"),
+            startAfter(cursor),
+            limit(IN_LIMIT)
+        )
+    }
+
+    const getInFeedQuery = () => {
+        return query(
+            collectionGroup(firestore, "uploads"),
+            orderBy("createdAt"),
+            limit(IN_LIMIT)
+        )
+    }
 
     const getLikes = async () => {
         const unsub = auth.onAuthStateChanged(async (cur_user) => {
@@ -271,8 +289,8 @@ export default function WatchPage({
                         <Feed
                             initialUploads={initialUploads}
                             widthNum={width && width < 1400 ? "95" : "28"}
-                            LOAD_LIMIT={LOAD_LIMIT}
-                            IN_LIMIT={IN_LIMIT}
+                            queryFunc={getFeedQuery}
+                            inQueryFunc={getInFeedQuery}
                         />
                     </div>
                 </div>
