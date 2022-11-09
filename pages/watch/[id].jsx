@@ -3,6 +3,7 @@ import {
     collectionGroup,
     deleteDoc,
     doc,
+    getCountFromServer,
     getDoc,
     getDocs,
     limit,
@@ -21,6 +22,7 @@ import { useContext, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import CommentSection from "../../Components/CommentSection"
 import Feed from "../../Components/Feed"
+import RatingBar from "../../Components/RatingBar"
 import Search from "../../Components/Search"
 import { UserContext } from "../../lib/context"
 import { auth, firestore, toJSON } from "../../lib/firebase"
@@ -97,6 +99,17 @@ export default function WatchPage({
     const { user, username } = useContext(UserContext)
     const [like, setLike] = useState(false)
     const [dislike, setDislike] = useState(false)
+    const [likes, setLikes] = useState(0)
+    const [dislikes, setDislikes] = useState(0)
+    const [percent, setPercent] = useState(0)
+
+    const updatePercent = (numLikes, numDislikes) => {
+        if (numLikes == 0) {
+            setPercent(0)
+        } else {
+            setPercent((numLikes / (numLikes + numDislikes)) * 100)
+        }
+    }
 
     const getFeedQuery = (cursor, asc) => {
         return query(
@@ -118,18 +131,34 @@ export default function WatchPage({
     const getLikes = async () => {
         const unsub = auth.onAuthStateChanged(async (cur_user) => {
             unsub()
+            let didLike = false
+            let didDislike = false
             if (cur_user) {
-                let likes = doc(vidRef.current, "likes", cur_user.uid)
-                likes = await getDoc(likes)
-                if (likes.exists()) {
+                didLike = doc(vidRef.current, "likes", cur_user.uid)
+                didLike = await getDoc(didLike)
+                if (didLike.exists()) {
                     setLike(true)
                 }
-                let dislikes = doc(vidRef.current, "dislikes", cur_user.uid)
-                dislikes = await getDoc(dislikes)
-                if (dislikes.exists()) {
+                didDislike = doc(vidRef.current, "dislikes", cur_user.uid)
+                didDislike = await getDoc(didDislike)
+                if (didDislike.exists()) {
                     setDislike(true)
                 }
             }
+            let numLikes = await getCountFromServer(
+                collection(vidRef.current, "likes")
+            )
+
+            numLikes = numLikes.data().count
+
+            let numDislikes = await getCountFromServer(
+                collection(vidRef.current, "dislikes")
+            )
+            numDislikes = numDislikes.data().count
+
+            setLikes(numLikes - didLike.exists() ? 1 : 0)
+            setDislikes(numDislikes - didDislike.exists() ? 1 : 0)
+            updatePercent(numLikes, numDislikes)
         })
     }
 
@@ -153,17 +182,19 @@ export default function WatchPage({
     }, [])
 
     const onLikeHelper = debounce(async () => {
-        const likes = doc(vidRef.current, "likes", user.uid)
+        const likesRef = doc(vidRef.current, "likes", user.uid)
         if (like) {
-            await deleteDoc(likes)
+            await deleteDoc(likesRef)
+            updatePercent(likes, dislikes)
         } else {
             if (dislike) {
-                const dislikes = doc(vidRef.current, "dislikes", user.uid)
-                await deleteDoc(dislikes)
+                const dislikesRef = doc(vidRef.current, "dislikes", user.uid)
+                await deleteDoc(dislikesRef)
             }
-            await setDoc(likes, {
+            await setDoc(likesRef, {
                 uid: user.uid,
             })
+            updatePercent(likes + 1, dislikes)
         }
     }, 500)
 
@@ -182,17 +213,19 @@ export default function WatchPage({
     }
 
     const onDislikeHelper = debounce(async () => {
-        const dislikes = doc(vidRef.current, "dislikes", user.uid)
+        const dislikesRef = doc(vidRef.current, "dislikes", user.uid)
         if (dislike) {
-            await deleteDoc(dislikes)
+            await deleteDoc(dislikesRef)
+            updatePercent(likes, dislikes)
         } else {
             if (like) {
-                const likes = doc(vidRef.current, "likes", user.uid)
-                await deleteDoc(likes)
+                const likesRef = doc(vidRef.current, "likes", user.uid)
+                await deleteDoc(likesRef)
             }
-            await setDoc(dislikes, {
+            await setDoc(dislikesRef, {
                 uid: user.uid,
             })
+            updatePercent(likes, dislikes + 1)
         }
     }, 500)
 
@@ -267,6 +300,7 @@ export default function WatchPage({
                                         width="30px"
                                     ></Image>
                                 </div>
+                                <RatingBar percent={percent} />
                             </div>
                             <p className={styles.title}>{title}</p>
                             <p className={styles.desc}>{desc}</p>

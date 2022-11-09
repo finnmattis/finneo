@@ -8,9 +8,9 @@ import { toJSON } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
 
 function Video({ width, id, title, thumbnailURL, views, createdAt }) {
-    const vert = useRef()
+    const [vert, setVert] = useState()
     useEffect(() => {
-        vert.current = width <= 28
+        setVert(width <= 28)
     }, [width])
     return (
         <Link href={`/watch/${id}`}>
@@ -70,9 +70,9 @@ export default function Feed({
     queryFunc,
     inQueryFunc,
 }) {
-    let width = useRef()
+    let [width, setWidth] = useState()
     useEffect(() => {
-        width.current = `${widthNum}vw`
+        setWidth(`${widthNum}vw`)
     }, [widthNum])
 
     //newUploads and oldUploads keep both lists of uploads to not have to make unnecessary calls to the database
