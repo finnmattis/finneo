@@ -72,6 +72,7 @@
 
 
 .text-container {
+    width: 80%;
     margin-left: 20px;
     display: flex;
     flex-direction: column;
@@ -81,7 +82,7 @@
     margin: 0;
     padding: 0;
     font-size: 30px;
-    color: white;
+    color: white
 }
 
 .title-vert {

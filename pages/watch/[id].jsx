@@ -156,8 +156,13 @@ export default function WatchPage({
             )
             numDislikes = numDislikes.data().count
 
-            setLikes(numLikes - didLike.exists() ? 1 : 0)
-            setDislikes(numDislikes - didDislike.exists() ? 1 : 0)
+            if (cur_user) {
+                setLikes(numLikes - didLike.exists() ? 1 : 0)
+                setDislikes(numDislikes - didDislike.exists() ? 1 : 0)
+            } else {
+                setLikes(numLikes)
+                setDislikes(numDislikes)
+            }
             updatePercent(numLikes, numDislikes)
         })
     }

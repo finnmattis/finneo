@@ -30,6 +30,10 @@
     align-items: center;
 }
 
+.input-container {
+    margin-top: 2.5vh;
+}
+
 .profile {
     position: relative;
     width: 60px;

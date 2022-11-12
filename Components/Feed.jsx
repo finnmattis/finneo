@@ -1,17 +1,39 @@
-import { getDocs, Timestamp } from "firebase/firestore"
+import { doc, getDoc, getDocs, Timestamp } from "firebase/firestore"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { toJSON } from "../lib/firebase"
+import { auth, firestore, toJSON } from "../lib/firebase"
 import styles from "../styles/Feed.module.css"
 
-function Video({ width, id, title, thumbnailURL, views, createdAt }) {
+function Video({
+    width,
+    id,
+    author_id,
+    title,
+    thumbnailURL,
+    views,
+    createdAt,
+}) {
     const [vert, setVert] = useState()
+    const [username, setUsername] = useState()
+    const [photoURL, setPhotoURL] = useState()
+
+    useEffect(() => {
+        const getAuthor = async () => {
+            const authorRef = doc(firestore, "users", author_id)
+            const author = (await getDoc(authorRef)).data()
+            setUsername(author.username)
+            setPhotoURL(author.photoURL)
+        }
+        getAuthor()
+    })
+
     useEffect(() => {
         setVert(width <= 28)
     }, [width])
+
     return (
         <Link href={`/watch/${id}`}>
             <div
@@ -30,7 +52,7 @@ function Video({ width, id, title, thumbnailURL, views, createdAt }) {
                         style={{ display: vert ? "none" : "inline-block" }}
                     >
                         <Image
-                            src="/user.png"
+                            src={photoURL || "/user.png"}
                             alt="profile"
                             layout="fill"
                         ></Image>
@@ -48,7 +70,7 @@ function Video({ width, id, title, thumbnailURL, views, createdAt }) {
                                 vert ? styles["misc-text-vert"] : ""
                             }`}
                         >
-                            User
+                            {username || "User"}
                         </h3>
                         <h1
                             className={`${styles["misc-text"]} ${
@@ -123,7 +145,7 @@ export default function Feed({
             toast.error("Failed to load more videos")
             return
         })
-        new_uploads = new_uploads.docs.map((doc) => doc.data())
+        new_uploads = new_uploads.docs.map(toJSON)
 
         setUploads([...uploads, ...new_uploads])
         if (filterIsNew) {
@@ -180,7 +202,6 @@ export default function Feed({
                             <Video
                                 width={widthNum}
                                 id={upload.id}
-                                photoURL={upload.photoURL}
                                 author_id={upload.author}
                                 title={upload.title}
                                 thumbnailURL={upload.thumbnailURL}

@@ -112,13 +112,15 @@ export default function CommentSection({ initialComments, vidRef }) {
 
     return (
         <div className={styles.root}>
-            <Input
-                name="Write Comment"
-                value={comment}
-                func={(e) => {
-                    setComment(e.target.value)
-                }}
-            />
+            <div className={styles["input-container"]}>
+                <Input
+                    name="Write Comment"
+                    value={comment}
+                    func={(e) => {
+                        setComment(e.target.value)
+                    }}
+                />
+            </div>
             <Button
                 name="Post Comment"
                 func={postComment}

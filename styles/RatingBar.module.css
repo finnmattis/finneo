@@ -13,3 +13,9 @@
     text-align: right;
     transition: width 400ms cubic-bezier(0.08, 0.82, 0.2, 1);
 }
+
+@media screen and (max-width: 1400px) {
+    .container {
+        width: 60px;
+    }
+}
